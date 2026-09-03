@@ -2,23 +2,37 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
+  PieChart,
+  Pie,
+  Cell,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { RefreshCw, Pencil, Check, Plus, Trash2, Sparkles, X } from "lucide-react";
+import {
+  RefreshCw,
+  Pencil,
+  Check,
+  Plus,
+  Trash2,
+  Sparkles,
+  X,
+  ArrowUpRight,
+  ArrowDownRight,
+  LayoutGrid,
+  Wallet,
+  LogOut,
+} from "lucide-react";
 
-/* ------------------------------------------------------------------ */
-/* constants                                                           */
 /* ------------------------------------------------------------------ */
 
 const OWNERS = [
-  { id: "mark", label: "MARK", he: "מארק", color: "#7AA2F7" },
-  { id: "ron", label: "RON", he: "רון", color: "#35C989" },
-  { id: "guy", label: "GUY", he: "גיא", color: "#C4A7F7" },
+  { id: "mark", label: "MARK", he: "מארק", color: "#131A3F" },
+  { id: "ron", label: "RON", he: "רון", color: "#3B6FE0" },
+  { id: "guy", label: "GUY", he: "גיא", color: "#7CC3F0" },
 ];
 
 const CALLS = [
@@ -28,10 +42,13 @@ const CALLS = [
   { id: "sell", he: "למכור" },
 ];
 
+const PALETTE = ["#131A3F", "#3B6FE0", "#7CC3F0", "#12B76A", "#F79009", "#9E77ED", "#0BA5C7", "#F04438"];
+
 const EMPTY = {
   positions: { mark: [], ron: [], guy: [] },
   cash: { mark: "", ron: "", guy: "" },
   deposits: { mark: "", ron: "", guy: "" },
+  realized: { mark: "", ron: "", guy: "" },
 };
 
 const usd = (n, d = 2) =>
@@ -42,7 +59,7 @@ const usd = (n, d = 2) =>
   }).format(n || 0);
 
 const usdShort = (n) =>
-  Math.abs(n) >= 1000 ? "$" + (n / 1000).toFixed(1) + "k" : "$" + Math.round(n);
+  Math.abs(n) >= 1000 ? "$" + (n / 1000).toFixed(1) + "k" : "$" + Math.round(n || 0);
 
 const pct = (n) => (n > 0 ? "+" : "") + (n || 0).toFixed(1) + "%";
 const toNum = (v) => Number(String(v).replace(/[^\d.-]/g, "")) || 0;
@@ -51,73 +68,266 @@ const isoDay = () => new Date().toISOString().slice(0, 10);
 const dayLabel = (iso) => iso.slice(8, 10) + "/" + iso.slice(5, 7);
 const tone = (n) => (n > 0 ? "up" : n < 0 ? "down" : "flat");
 const ownerOf = (id) => OWNERS.find((o) => o.id === id);
+const todayHe = () =>
+  new Date().toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" });
 
 /* ------------------------------------------------------------------ */
-/* presentational pieces — defined here, never inside the page         */
+/* pieces — module level, so inputs never lose focus                   */
 /* ------------------------------------------------------------------ */
 
-function CapitalStats({ b }) {
+function Kpi({ label, value, delta, foot }) {
   return (
-    <div className="stats">
-      <div className="stat">
-        <span>הופקד</span>
-        <b dir="ltr">{b.deposits ? usd(b.deposits, 0) : "—"}</b>
+    <div className="kpi">
+      <span className="lab">{label}</span>
+      <div className="val" dir="ltr">{value}</div>
+      {delta !== undefined && delta !== null && (
+        <span className={"tag " + tone(delta)}>
+          {delta > 0 ? <ArrowUpRight size={12} /> : delta < 0 ? <ArrowDownRight size={12} /> : null}
+          <span dir="ltr">{pct(delta)}</span>
+        </span>
+      )}
+      {foot && <div className="foot">{foot}</div>}
+    </div>
+  );
+}
+
+function Donut({ slices, centerValue, centerLabel }) {
+  const total = slices.reduce((s, x) => s + x.value, 0);
+  if (!total)
+    return <div className="hint">אין עדיין אחזקות להצגה.</div>;
+  return (
+    <div className="donutwrap">
+      <div className="donut">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={slices}
+              dataKey="value"
+              innerRadius={52}
+              outerRadius={74}
+              paddingAngle={2}
+              stroke="none"
+              isAnimationActive={false}
+            >
+              {slices.map((s, i) => (
+                <Cell key={i} fill={s.color} />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="donutmid">
+          <b dir="ltr">{centerValue}</b>
+          <span>{centerLabel}</span>
+        </div>
       </div>
-      <div className="stat">
-        <span>מושקע</span>
-        <b dir="ltr">{usd(b.held, 0)}</b>
-      </div>
-      <div className="stat">
-        <span>פנוי</span>
-        <b dir="ltr" style={{ color: "var(--cash)" }}>
-          {usd(b.cash, 0)}
-        </b>
+      <div className="legend">
+        {slices.map((s, i) => (
+          <div className="lrow" key={i}>
+            <i className="dot" style={{ background: s.color }} />
+            <span className="nm">{s.name}</span>
+            <span className="vl" dir="ltr">
+              {((s.value / total) * 100).toFixed(0)}%
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
-function MoneyEditor({ data, owners, onChange }) {
-  if (owners.length === 0) return null;
+function TrendChart({ history, keys }) {
+  const data = history.map((h) => ({
+    label: dayLabel(h.d),
+    total: keys.reduce((s, k) => s + (h[k] || 0), 0),
+  }));
+  if (data.length < 2)
+    return (
+      <div className="hint">
+        נרשמה נקודה אחת בלבד. הגרף נפתח אחרי הרענון הבא ביום אחר — כל רענון שומר את שווי היום.
+      </div>
+    );
+  return (
+    <div style={{ height: 180, direction: "ltr", marginRight: -8, marginLeft: -8 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 6, right: 8, left: -12, bottom: 0 }}>
+          <defs>
+            <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#3B6FE0" stopOpacity={0.22} />
+              <stop offset="100%" stopColor="#3B6FE0" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <XAxis
+            dataKey="label"
+            tick={{ fill: "#97A3BA", fontSize: 11 }}
+            axisLine={false}
+            tickLine={false}
+            minTickGap={26}
+          />
+          <YAxis
+            tick={{ fill: "#97A3BA", fontSize: 11 }}
+            axisLine={false}
+            tickLine={false}
+            tickFormatter={usdShort}
+            width={48}
+          />
+          <Tooltip
+            contentStyle={{
+              background: "#fff",
+              border: "1px solid #E8ECF4",
+              borderRadius: 12,
+              fontSize: 12,
+              boxShadow: "0 8px 24px rgba(16,23,54,.10)",
+            }}
+            labelStyle={{ color: "#6B7A99", marginBottom: 2 }}
+            formatter={(v) => [usd(v, 0), "שווי"]}
+          />
+          <Area
+            type="monotone"
+            dataKey="total"
+            stroke="#3B6FE0"
+            strokeWidth={2.4}
+            fill="url(#fill)"
+            isAnimationActive={false}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function CallPill({ call }) {
+  if (!call) return <span className="pill none">אין הוראה</span>;
+  return <span className={"pill " + call.action}>{CALLS.find((c) => c.id === call.action)?.he}</span>;
+}
+
+function MoneyEditor({ data, owners, books, onChange }) {
+  if (!owners.length) return null;
   return (
     <div className="card">
-      <div className="ttl">כסף בתיק</div>
-      {owners.map((o) => (
-        <div key={o.id} style={{ marginBottom: 14 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <span style={{ width: 8, height: 8, borderRadius: 99, background: o.color }} />
-            <span className="name">{o.label}</span>
-          </div>
-          <div className="g2">
-            <div>
-              <span className="lbl">סה״כ הופקד</span>
-              <input
-                className="inp"
-                dir="ltr"
-                inputMode="decimal"
-                placeholder="0"
-                value={data.deposits[o.id] ?? ""}
-                onChange={(e) => onChange("deposits", o.id, e.target.value)}
-              />
-            </div>
-            <div>
-              <span className="lbl">פנוי להשקעה</span>
-              <input
-                className="inp"
-                dir="ltr"
-                inputMode="decimal"
-                placeholder="0"
-                value={data.cash[o.id] ?? ""}
-                onChange={(e) => onChange("cash", o.id, e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-      ))}
-      <div className="hint">
-        ״הופקד״ הוא כל הכסף שהוכנס לתיק לאורך הדרך. התשואה נמדדת מולו, כך שהיא כוללת גם רווחים
-        ממניות שכבר נמכרו.
+      <div className="ctitle">כסף בתיק</div>
+      <div className="csub">
+        הזינו כמה כסף הוכנס לחשבון. הפנוי מחושב לבד — כל פוזיציה שנוספת יורדת ממנו.
       </div>
+      {owners.map((o) => {
+        const b = books[o.id] || {};
+        return (
+          <div key={o.id} style={{ marginBottom: 16 }}>
+            {owners.length > 1 && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <i className="dot" style={{ background: o.color }} />
+                <span className="t1">{o.label}</span>
+              </div>
+            )}
+            <span className="lbl">סה״כ הופקד לחשבון</span>
+            <input
+              className="inp"
+              dir="ltr"
+              inputMode="decimal"
+              placeholder="0"
+              value={data.deposits[o.id] ?? ""}
+              onChange={(e) => onChange("deposits", o.id, e.target.value)}
+            />
+
+            <div className="calcrow">
+              <span>
+                הושקע במניות
+                <b dir="ltr"> {usd(b.basis || 0, 0)}</b>
+              </span>
+              <span>
+                נותר פנוי
+                <b dir="ltr" className={b.autoCash < 0 ? "down" : ""}>
+                  {" "}
+                  {usd(b.manual ? b.cash : b.autoCash || 0, 0)}
+                </b>
+              </span>
+            </div>
+
+            {b.autoCash < 0 && !b.manual && (
+              <div className="hint" style={{ color: "var(--down)" }}>
+                ההשקעות גדולות מההפקדות שהזנתם. בדקו את הסכום שהוכנס לחשבון.
+              </div>
+            )}
+
+            {b.manual ? (
+              <>
+                <span className="lbl" style={{ marginTop: 12 }}>פנוי — ערך ידני</span>
+                <input
+                  className="inp"
+                  dir="ltr"
+                  inputMode="decimal"
+                  value={data.cash[o.id] ?? ""}
+                  onChange={(e) => onChange("cash", o.id, e.target.value)}
+                />
+                <button
+                  className="btn sm"
+                  style={{ marginTop: 8 }}
+                  onClick={() => onChange("cash", o.id, "")}
+                >
+                  חזרה לחישוב אוטומטי
+                </button>
+              </>
+            ) : (
+              <button
+                className="btn sm"
+                style={{ marginTop: 10 }}
+                onClick={() => onChange("cash", o.id, String(Math.max(0, Math.round(b.autoCash || 0))))}
+              >
+                תיקון ידני של הפנוי
+              </button>
+            )}
+          </div>
+        );
+      })}
+      <div className="hint">
+        אחרי מכירה הכסף חוזר לחשבון והחישוב לא יודע על כך. במקרה כזה תקנו ידנית, או עדכנו את
+        סכום ההפקדות.
+      </div>
+    </div>
+  );
+}
+
+function AddPosition({ draft, setDraft, onAdd, ownerHe }) {
+  return (
+    <div className="card">
+      <div className="ctitle">הוספת פוזיציה{ownerHe ? ` ל${ownerHe}` : ""}</div>
+      <div className="csub">סימול אמריקאי כמו AAPL. לבורסת תל אביב הוסיפו סיומת, למשל TEVA.TA</div>
+      <div className="g3" style={{ marginBottom: 12 }}>
+        <div>
+          <span className="lbl">סימול</span>
+          <input
+            className="inp"
+            dir="ltr"
+            placeholder="AAPL"
+            value={draft.ticker}
+            onChange={(e) => setDraft({ ...draft, ticker: e.target.value })}
+          />
+        </div>
+        <div>
+          <span className="lbl">כמות</span>
+          <input
+            className="inp"
+            dir="ltr"
+            inputMode="decimal"
+            placeholder="12"
+            value={draft.qty}
+            onChange={(e) => setDraft({ ...draft, qty: e.target.value })}
+          />
+        </div>
+        <div>
+          <span className="lbl">מחיר קנייה</span>
+          <input
+            className="inp"
+            dir="ltr"
+            inputMode="decimal"
+            placeholder="180.5"
+            value={draft.cost}
+            onChange={(e) => setDraft({ ...draft, cost: e.target.value })}
+          />
+        </div>
+      </div>
+      <button className="btn pri wide" onClick={onAdd}>
+        <Plus size={17} /> הוספה
+      </button>
     </div>
   );
 }
@@ -126,16 +336,11 @@ function CallEditor({ init, onSave, onClear, onCancel }) {
   const [action, setAction] = useState(init?.action || "hold");
   const [note, setNote] = useState(init?.note || "");
   return (
-    <div style={{ marginTop: 13, paddingTop: 13, borderTop: "1px solid var(--line)" }}>
+    <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--line)" }}>
       <span className="lbl">ההוראה</span>
       <div className="chips">
         {CALLS.map((c) => (
-          <button
-            key={c.id}
-            className="chip"
-            data-on={action === c.id ? 1 : 0}
-            onClick={() => setAction(c.id)}
-          >
+          <button key={c.id} className="chip" data-on={action === c.id ? 1 : 0} onClick={() => setAction(c.id)}>
             {c.he}
           </button>
         ))}
@@ -147,45 +352,29 @@ function CallEditor({ init, onSave, onClear, onCancel }) {
         value={note}
         onChange={(e) => setNote(e.target.value)}
       />
-      <div style={{ display: "flex", gap: 7, marginTop: 12, flexWrap: "wrap" }}>
-        <button className="btn pri sm" onClick={() => onSave(action, note)}>
-          פרסום
-        </button>
-        <button className="btn sm" onClick={onCancel}>
-          ביטול
-        </button>
-        {init && (
-          <button className="btn sm dg" onClick={onClear}>
-            הסרת הוראה
-          </button>
-        )}
+      <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+        <button className="btn pri sm" onClick={() => onSave(action, note)}>פרסום</button>
+        <button className="btn sm" onClick={onCancel}>ביטול</button>
+        {init && <button className="btn sm dg" onClick={onClear}>הסרה</button>}
       </div>
     </div>
   );
 }
 
-function ResearchBlock({ ticker, price, entry, onRun, onClose }) {
+function Research({ ticker, price, entry, onRun, onClose }) {
   if (!entry)
     return (
-      <button className="btn sm" style={{ marginTop: 12, width: "100%" }} onClick={onRun}>
-        <Sparkles size={14} /> ניתוח
+      <button className="btn sm wide" style={{ marginTop: 12 }} onClick={onRun}>
+        <Sparkles size={15} /> ניתוח
       </button>
     );
-
   if (entry.loading)
-    return (
-      <div className="rs" style={{ fontSize: 12.5, color: "var(--mut)" }}>
-        אוסף נתונים על {ticker}…
-      </div>
-    );
-
+    return <div className="rs"><span className="hint">אוסף נתונים על {ticker}…</span></div>;
   if (entry.error)
     return (
-      <div className="rs" style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-        <span style={{ fontSize: 12.5, color: "var(--down)" }}>הניתוח נכשל.</span>
-        <button className="btn sm" onClick={onRun}>
-          נסו שוב
-        </button>
+      <div className="rs" style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
+        <span className="hint" style={{ color: "var(--down)" }}>הניתוח נכשל.</span>
+        <button className="btn sm" onClick={onRun}>נסו שוב</button>
       </div>
     );
 
@@ -197,278 +386,282 @@ function ResearchBlock({ ticker, price, entry, onRun, onClose }) {
 
   return (
     <div className="rs">
-      <div className="rshead">
-        <span style={{ fontSize: 12, color: "var(--mut)" }}>
-          {d.company || ticker} · נבדק {entry.at}
-        </span>
-        <button
-          className="iconbtn"
-          style={{ width: 30, height: 30, borderRadius: 9 }}
-          onClick={onClose}
-          aria-label="סגירה"
-        >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <span className="hint">{d.company || ticker} · נבדק {entry.at}</span>
+        <button className="icb" style={{ width: 32, height: 32, borderRadius: 10 }} onClick={onClose} aria-label="סגירה">
           <X size={14} />
         </button>
       </div>
-
-      <div className="rsgrid">
-        <div className="rsg">
+      <div className="rsg">
+        <div className="rsi">
           <span>המלצת אנליסטים</span>
-          <b>
-            {d.consensus || "—"}
-            {d.analysts ? (
-              <small style={{ color: "var(--mut)", fontWeight: 400 }}> ({d.analysts})</small>
-            ) : null}
-          </b>
+          <b>{d.consensus || "—"}{d.analysts ? <small style={{ color: "var(--mut)", fontWeight: 400 }}> ({d.analysts})</small> : null}</b>
         </div>
-        <div className="rsg">
+        <div className="rsi">
           <span>יעד מחיר ממוצע</span>
           <b dir="ltr">
             {d.target ? usd(d.target) : "—"}
-            {gap !== null && (
-              <small className={tone(gap)} style={{ fontWeight: 500 }}>
-                {" "}
-                {pct(gap)}
-              </small>
-            )}
+            {gap !== null && <small className={tone(gap)}> {pct(gap)}</small>}
           </b>
         </div>
-        <div className="rsg">
-          <span>מכפיל רווח</span>
-          <b dir="ltr">{d.pe ? d.pe.toFixed(1) : "—"}</b>
-        </div>
-        <div className="rsg">
-          <span>מחיר נוכחי</span>
-          <b dir="ltr">{now ? usd(now) : "—"}</b>
-        </div>
+        <div className="rsi"><span>מכפיל רווח</span><b dir="ltr">{d.pe ? d.pe.toFixed(1) : "—"}</b></div>
+        <div className="rsi"><span>מחיר נוכחי</span><b dir="ltr">{now ? usd(now) : "—"}</b></div>
       </div>
-
       {pos !== null && (
         <div>
-          <span style={{ fontSize: 10.5, color: "var(--mut)" }}>טווח 52 שבועות</span>
-          <div className="rng" dir="ltr">
-            <i style={{ left: pos + "%" }} />
-          </div>
-          <div className="rngl" dir="ltr">
-            <span>{usd(d.low52, 0)}</span>
-            <span>{usd(d.high52, 0)}</span>
-          </div>
+          <span className="lbl" style={{ marginBottom: 0 }}>טווח 52 שבועות</span>
+          <div className="rng" dir="ltr"><i style={{ left: pos + "%" }} /></div>
+          <div className="rngl" dir="ltr"><span>{usd(d.low52, 0)}</span><span>{usd(d.high52, 0)}</span></div>
         </div>
       )}
-
       {Array.isArray(d.points) && d.points.length > 0 && (
-        <ul className="pts">
-          {d.points.map((p, i) => (
-            <li key={i}>{p}</li>
-          ))}
-        </ul>
+        <ul className="pts">{d.points.map((p, i) => <li key={i}>{p}</li>)}</ul>
       )}
-
-      <div className="hint">נתוני רקע. ההוראה נשארת של מארק.</div>
+      <div className="hint" style={{ marginTop: 10 }}>נתוני רקע. ההוראה נשארת של מארק.</div>
     </div>
   );
 }
 
-function PositionCard({
-  row,
-  edit,
-  canEdit,
-  canCall,
-  editingCall,
-  confirmDel,
-  research,
-  onOpenCall,
-  onSaveCall,
-  onClearCall,
-  onCancelCall,
-  onAskDelete,
-  onCancelDelete,
-  onDelete,
-  onResearch,
-  onCloseResearch,
-}) {
-  const r = row;
+function PositionEditor({ row, onBuy, onSell, onFix, onCancel }) {
+  const [mode, setMode] = useState("buy");
+  const [qty, setQty] = useState("");
+  const [price, setPrice] = useState("");
+  const [fixQty, setFixQty] = useState(String(row.qty));
+  const [fixCost, setFixCost] = useState(String(row.cost));
+
+  const n = parseFloat(qty);
+  const p = parseFloat(price);
+  const valid = n > 0 && p >= 0;
+  const tooMany = mode === "sell" && n > row.qty;
+
+  const preview = () => {
+    if (!valid) return null;
+    if (mode === "buy") {
+      const newQty = row.qty + n;
+      const newCost = (row.qty * row.cost + n * p) / newQty;
+      return `אחרי הקנייה: ${newQty} יחידות, מחיר ממוצע ${usd(newCost)}`;
+    }
+    if (tooMany) return null;
+    const left = row.qty - n;
+    return left === 0
+      ? `מכירה מלאה. ${usd(n * p)} יתווספו לפנוי והפוזיציה תיסגר.`
+      : `אחרי המכירה: ${left} יחידות. ${usd(n * p)} יתווספו לפנוי.`;
+  };
+
   return (
-    <div className="card">
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-        <div>
-          <div style={{ fontSize: 17, fontWeight: 600 }} dir="ltr">
-            {r.ticker}
+    <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--line)" }}>
+      <div className="chips" style={{ gridTemplateColumns: "1fr 1fr 1fr" }}>
+        <button className="chip" data-on={mode === "buy" ? 1 : 0} onClick={() => setMode("buy")}>
+          קניתי עוד
+        </button>
+        <button className="chip" data-on={mode === "sell" ? 1 : 0} onClick={() => setMode("sell")}>
+          מכרתי
+        </button>
+        <button className="chip" data-on={mode === "fix" ? 1 : 0} onClick={() => setMode("fix")}>
+          תיקון
+        </button>
+      </div>
+
+      {mode === "fix" ? (
+        <>
+          <div className="g2">
+            <div>
+              <span className="lbl">כמות</span>
+              <input
+                className="inp"
+                dir="ltr"
+                inputMode="decimal"
+                value={fixQty}
+                onChange={(e) => setFixQty(e.target.value)}
+              />
+            </div>
+            <div>
+              <span className="lbl">מחיר קנייה ממוצע</span>
+              <input
+                className="inp"
+                dir="ltr"
+                inputMode="decimal"
+                value={fixCost}
+                onChange={(e) => setFixCost(e.target.value)}
+              />
+            </div>
           </div>
-          <div className="meta" dir="ltr">
-            {r.qty} × {usd(r.cost)}
+          <div className="hint" style={{ marginTop: 8 }}>
+            תיקון של נתון שהוזן שגוי. אינו משפיע על הכסף הפנוי כמכירה.
           </div>
-        </div>
-        <div className="right">
-          <div className="rv" dir="ltr">
-            {r.value === null ? "—" : usd(r.value)}
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <button
+              className="btn pri sm"
+              onClick={() => onFix(parseFloat(fixQty), parseFloat(fixCost))}
+              disabled={!(parseFloat(fixQty) > 0) || !(parseFloat(fixCost) >= 0)}
+            >
+              שמירה
+            </button>
+            <button className="btn sm" onClick={onCancel}>ביטול</button>
           </div>
-          <div className={"rd " + tone(r.plPct)} dir="ltr">
-            {r.plPct === null ? "ממתין למחיר" : `${usd(r.pl, 0)} · ${pct(r.plPct)}`}
+        </>
+      ) : (
+        <>
+          <div className="g2">
+            <div>
+              <span className="lbl">{mode === "buy" ? "כמה נקנו" : "כמה נמכרו"}</span>
+              <input
+                className="inp"
+                dir="ltr"
+                inputMode="decimal"
+                placeholder={mode === "sell" ? String(row.qty) : "0"}
+                value={qty}
+                onChange={(e) => setQty(e.target.value)}
+              />
+            </div>
+            <div>
+              <span className="lbl">{mode === "buy" ? "מחיר לקנייה" : "מחיר למכירה"}</span>
+              <input
+                className="inp"
+                dir="ltr"
+                inputMode="decimal"
+                placeholder="0"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+            </div>
           </div>
-          {r.day !== null && (
-            <div className={"rd " + tone(r.day)} dir="ltr" style={{ opacity: 0.65 }}>
-              היום {pct(r.day)}
+
+          {tooMany && (
+            <div className="hint" style={{ color: "var(--down)", marginTop: 8 }}>
+              יש רק {row.qty} יחידות בפוזיציה.
             </div>
           )}
+          {preview() && <div className="calcrow" style={{ marginTop: 10 }}>{preview()}</div>}
+
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <button
+              className="btn pri sm"
+              disabled={!valid || tooMany}
+              onClick={() => (mode === "buy" ? onBuy(n, p) : onSell(n, p))}
+            >
+              {mode === "buy" ? "הוספה לפוזיציה" : "רישום מכירה"}
+            </button>
+            <button className="btn sm" onClick={onCancel}>ביטול</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function PositionCard(props) {
+  const { r, edit, canEdit, canCall, editing, adjusting, confirming, research } = props;
+  return (
+    <div className="card">
+      <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+        <div className="sym">{r.ticker.slice(0, 4)}</div>
+        <div className="grow">
+          <div className="t1" dir="ltr">{r.ticker}</div>
+          <div className="t2" dir="ltr">{r.qty} × {usd(r.cost)}</div>
+        </div>
+        <div className="rt">
+          <div className="a" dir="ltr">{r.value === null ? "—" : usd(r.value)}</div>
+          <div className={"b " + tone(r.plPct)} dir="ltr">
+            {r.plPct === null ? "ממתין למחיר" : `${usd(r.pl, 0)} · ${pct(r.plPct)}`}
+          </div>
         </div>
       </div>
 
-      {r.call && !editingCall && (
-        <div className="call">
-          <div style={{ display: "flex", alignItems: "baseline", gap: 9 }}>
-            <span className="callact">{CALLS.find((c) => c.id === r.call.action)?.he}</span>
-            <span className="callmeta">מארק · {r.call.date}</span>
+      {r.call && !editing && (
+        <div className="note">
+          <div className="notehead">
+            <CallPill call={r.call} />
+            <span className="notemeta">מארק · {r.call.date}</span>
           </div>
-          {r.call.note && <div className="callnote">{r.call.note}</div>}
+          {r.call.note && <div className="notetxt">{r.call.note}</div>}
         </div>
       )}
 
-      {!editingCall && (
-        <ResearchBlock
+      {!editing && !adjusting && (
+        <Research
           ticker={r.ticker}
           price={r.price}
           entry={research}
-          onRun={() => onResearch(r.ticker)}
-          onClose={() => onCloseResearch(r.ticker)}
+          onRun={() => props.onResearch(r.ticker)}
+          onClose={() => props.onCloseResearch(r.ticker)}
         />
       )}
 
-      {edit && canEdit && !editingCall && (
-        <div
-          style={{ marginTop: 12, display: "flex", justifyContent: "space-between", gap: 8 }}
-        >
-          {canCall ? (
-            <button className="btn sm" onClick={() => onOpenCall(r.id)}>
-              {r.call ? "עריכת הוראה" : "כתיבת הוראה"}
+      {edit && canEdit && !editing && !adjusting && (
+        <div style={{ marginTop: 10, display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ display: "flex", gap: 8 }}>
+            <button className="btn sm" onClick={() => props.onOpenAdjust(r.id)}>
+              עדכון פוזיציה
             </button>
-          ) : (
-            <span />
-          )}
-          {confirmDel ? (
+            {canCall && (
+              <button className="btn sm" onClick={() => props.onOpenCall(r.id)}>
+                {r.call ? "עריכת הוראה" : "הוראה"}
+              </button>
+            )}
+          </span>
+          {confirming ? (
             <span style={{ display: "flex", gap: 6 }}>
-              <button className="btn sm dg" onClick={() => onDelete(r.owner, r.id)}>
-                לאשר מחיקה
-              </button>
-              <button className="btn sm" onClick={onCancelDelete}>
-                ביטול
-              </button>
+              <button className="btn sm dg" onClick={() => props.onDelete(r.owner, r.id)}>לאשר</button>
+              <button className="btn sm" onClick={props.onCancelDelete}>ביטול</button>
             </span>
           ) : (
-            <button className="btn sm dg" onClick={() => onAskDelete(r.id)}>
-              <Trash2 size={14} />
+            <button className="btn sm dg" onClick={() => props.onAskDelete(r.id)} aria-label="מחיקה">
+              <Trash2 size={15} />
             </button>
           )}
         </div>
       )}
 
-      {edit && canCall && editingCall && (
-        <CallEditor
-          init={r.call}
-          onSave={(a, n) => onSaveCall(r.owner, r.id, a, n)}
-          onClear={() => onClearCall(r.owner, r.id)}
-          onCancel={onCancelCall}
+      {edit && canEdit && adjusting && (
+        <PositionEditor
+          row={r}
+          onBuy={(q, p) => props.onBuy(r.owner, r.id, q, p)}
+          onSell={(q, p) => props.onSell(r.owner, r.id, q, p)}
+          onFix={(q, c) => props.onFix(r.owner, r.id, q, c)}
+          onCancel={props.onCancelAdjust}
         />
       )}
-    </div>
-  );
-}
 
-function ValueChart({ history }) {
-  const chartData = history.map((h) => ({ ...h, label: dayLabel(h.d) }));
-  if (chartData.length < 2)
-    return (
-      <div className="hint" style={{ marginTop: 0 }}>
-        נרשמה נקודה אחת. הגרף נפתח אחרי הרענון הבא ביום אחר — כל רענון שומר את שווי היום.
-      </div>
-    );
-  return (
-    <div style={{ height: 195, direction: "ltr", marginRight: -6 }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
-          <XAxis
-            dataKey="label"
-            tick={{ fill: "#7E90AD", fontSize: 10.5 }}
-            axisLine={{ stroke: "#1F2D45" }}
-            tickLine={false}
-            minTickGap={24}
-          />
-          <YAxis
-            tick={{ fill: "#7E90AD", fontSize: 10.5 }}
-            axisLine={false}
-            tickLine={false}
-            tickFormatter={usdShort}
-            width={50}
-          />
-          <Tooltip
-            contentStyle={{
-              background: "#0E1626",
-              border: "1px solid #2B3C59",
-              borderRadius: 11,
-              fontSize: 12,
-              padding: "8px 11px",
-            }}
-            labelStyle={{ color: "#7E90AD", marginBottom: 4 }}
-            formatter={(v, n) => [usd(v, 0), String(n).toUpperCase()]}
-          />
-          {OWNERS.map((o) => (
-            <Line
-              key={o.id}
-              type="monotone"
-              dataKey={o.id}
-              stroke={o.color}
-              strokeWidth={2}
-              dot={false}
-              isAnimationActive={false}
-            />
-          ))}
-        </LineChart>
-      </ResponsiveContainer>
+      {edit && canCall && editing && (
+        <CallEditor
+          init={r.call}
+          onSave={(a, n) => props.onSaveCall(r.owner, r.id, a, n)}
+          onClear={() => props.onSaveCall(r.owner, r.id, null, "")}
+          onCancel={props.onCancelCall}
+        />
+      )}
     </div>
   );
 }
 
 function Gate({ onPick }) {
   return (
-    <div className="app wrap">
-      <div style={{ paddingTop: 54, maxWidth: 420, margin: "0 auto" }}>
-        <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: "-.02em" }}>תיק המשפחה</div>
-        <div style={{ fontSize: 13.5, color: "var(--mut)", marginTop: 7, lineHeight: 1.6 }}>
-          מי אתם? כולם רואים את כל התיקים, וכל אחד עורך רק את שלו.
+    <div className="gate">
+      <div className="gatebox">
+        <div style={{ fontSize: 25, fontWeight: 700, letterSpacing: "-.02em" }}>תיק המשפחה</div>
+        <div style={{ fontSize: 14, color: "var(--mut)", margin: "8px 0 24px", lineHeight: 1.6 }}>
+          מי אתם? כל אחד רואה ועורך רק את התיק שלו. מארק רואה את שלושתם.
         </div>
-        <div style={{ marginTop: 22 }}>
-          {OWNERS.map((o) => (
-            <button
-              key={o.id}
-              className="btn"
-              style={{
-                width: "100%",
-                marginBottom: 9,
-                justifyContent: "flex-start",
-                gap: 11,
-                minHeight: 54,
-                fontSize: 15,
-              }}
-              onClick={() => onPick(o.id)}
-            >
-              <span style={{ width: 9, height: 9, borderRadius: 99, background: o.color }} />
-              {o.label}
-              <span style={{ color: "var(--mut)", fontSize: 12.5, fontWeight: 400 }}>
+        {OWNERS.map((o) => (
+          <button key={o.id} className="pick" onClick={() => onPick(o.id)}>
+            <span className="av" style={{ background: o.color }}>{o.label[0]}</span>
+            <span className="grow">
+              <span className="t1" style={{ display: "block" }}>{o.label}</span>
+              <span className="t2" style={{ display: "block" }}>
                 {o.id === "mark" ? "מנהל התיקים" : o.he}
               </span>
-            </button>
-          ))}
-        </div>
-        <div className="hint" style={{ marginTop: 26 }}>
-          הבחירה נשמרת במכשיר שלכם. אפשר להחליף בכל רגע מהפינה התחתונה של המסך.
+            </span>
+          </button>
+        ))}
+        <div className="hint" style={{ marginTop: 18 }}>
+          הבחירה נשמרת במכשיר שלכם ואפשר להחליף בכל רגע.
         </div>
       </div>
     </div>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* page                                                                */
 /* ------------------------------------------------------------------ */
 
 export default function Dashboard() {
@@ -476,7 +669,7 @@ export default function Dashboard() {
   const [history, setHistory] = useState([]);
   const [quotes, setQuotes] = useState({});
   const [me, setMe] = useState(null);
-  const [tab, setTab] = useState("manager");
+  const [tab, setTab] = useState(null);
   const [edit, setEdit] = useState(false);
   const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -485,49 +678,61 @@ export default function Dashboard() {
   const [draft, setDraft] = useState({ ticker: "", qty: "", cost: "" });
   const [openCall, setOpenCall] = useState(null);
   const [confirmDel, setConfirmDel] = useState(null);
+  const [adjust, setAdjust] = useState(null);
   const [research, setResearch] = useState({});
-  const saveTimer = useRef(null);
+  const timer = useRef(null);
 
-  /* ---- load ---- */
+  /* ---- identity ---- */
   useEffect(() => {
+    try {
+      const who = window.localStorage.getItem("fam-me");
+      if (who) setMe(who);
+    } catch (e) {}
+    setReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!me) return;
+    setTab(me === "mark" ? "overview" : me);
     (async () => {
       try {
-        const res = await fetch("/api/state");
-        if (res.ok) {
-          const j = await res.json();
-          setData({ ...EMPTY, ...(j.data || {}) });
-          setHistory(j.history || []);
-        }
+        const res = await fetch(`/api/state?me=${me}`);
+        if (!res.ok) throw new Error();
+        const j = await res.json();
+        setData({ ...EMPTY, ...(j.data || {}) });
+        setHistory(j.history || []);
       } catch (e) {
         setErr("לא הצלחתי לטעון את הנתונים.");
       }
-      try {
-        const who = window.localStorage.getItem("fam-me");
-        if (who) setMe(who);
-      } catch (e) {}
-      setReady(true);
     })();
-  }, []);
+  }, [me]);
 
-  /* ---- save, debounced so typing does not hit the server per keystroke ---- */
-  const persist = useCallback((next) => {
-    setData(next);
-    clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => {
-      fetch("/api/state", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: next }),
-      }).catch(() => setErr("השינוי לא נשמר."));
-    }, 600);
-  }, []);
+  const persist = useCallback(
+    (next) => {
+      setData(next);
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => {
+        fetch("/api/state", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ me, data: next }),
+        }).catch(() => setErr("השינוי לא נשמר."));
+      }, 600);
+    },
+    [me]
+  );
 
-  /* ---- prices ---- */
+  /* ---- visibility ---- */
+  const visible = useMemo(
+    () => (me === "mark" ? OWNERS : OWNERS.filter((o) => o.id === me)),
+    [me]
+  );
+
   const tickers = useMemo(() => {
     const s = new Set();
-    Object.values(data.positions).forEach((l) => (l || []).forEach((p) => s.add(p.ticker)));
+    visible.forEach((o) => (data.positions[o.id] || []).forEach((p) => s.add(p.ticker)));
     return [...s];
-  }, [data]);
+  }, [data, visible]);
 
   const refresh = useCallback(async () => {
     if (!tickers.length) return;
@@ -541,13 +746,11 @@ export default function Dashboard() {
       });
       if (!res.ok) throw new Error();
       const q = await res.json();
-      setQuotes((prev) => ({ ...prev, ...q }));
-      setStamp(
-        new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })
-      );
+      setQuotes((p) => ({ ...p, ...q }));
+      setStamp(new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }));
 
       const point = { d: isoDay() };
-      OWNERS.forEach((o) => {
+      visible.forEach((o) => {
         point[o.id] = (data.positions[o.id] || []).reduce((s, p) => {
           const px = q[p.ticker] ? q[p.ticker].price : p.cost;
           return s + px * p.qty;
@@ -557,21 +760,20 @@ export default function Dashboard() {
       fetch("/api/state", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ historyPoint: point }),
+        body: JSON.stringify({ me, historyPoint: point }),
       }).catch(() => {});
     } catch (e) {
       setErr("לא הצלחתי למשוך מחירים כרגע.");
     } finally {
       setLoading(false);
     }
-  }, [tickers, data]);
+  }, [tickers, data, visible, me]);
 
   useEffect(() => {
-    if (ready && tickers.length && !stamp) refresh();
+    if (me && tickers.length && !stamp) refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, tickers.length]);
+  }, [me, tickers.length]);
 
-  /* ---- research ---- */
   const runResearch = useCallback(async (ticker) => {
     setResearch((s) => ({ ...s, [ticker]: { loading: true } }));
     try {
@@ -584,10 +786,7 @@ export default function Dashboard() {
       const d = await res.json();
       setResearch((s) => ({
         ...s,
-        [ticker]: {
-          data: d,
-          at: new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }),
-        },
+        [ticker]: { data: d, at: new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }) },
       }));
     } catch (e) {
       setResearch((s) => ({ ...s, [ticker]: { error: true } }));
@@ -595,9 +794,9 @@ export default function Dashboard() {
   }, []);
 
   /* ---- math ---- */
-  const allRows = useMemo(() => {
-    return OWNERS.flatMap((o) =>
-      (data.positions[o.id] || []).map((p) => {
+  const rowsOf = useCallback(
+    (ownerId) =>
+      (data.positions[ownerId] || []).map((p) => {
         const q = quotes[p.ticker];
         const price = q ? q.price : null;
         const basis = p.cost * p.qty;
@@ -605,7 +804,7 @@ export default function Dashboard() {
         const pl = value === null ? null : value - basis;
         return {
           ...p,
-          owner: o.id,
+          owner: ownerId,
           price,
           basis,
           value,
@@ -614,29 +813,25 @@ export default function Dashboard() {
           day: q ? q.change : null,
           dayAbs: value === null || !q ? null : (value * q.change) / 100,
         };
-      })
-    );
-  }, [data, quotes]);
+      }),
+    [data, quotes]
+  );
 
-  const book = (rows, cash, deposits) => {
+  const book = (rows, cashOverride, deposits, realized = 0) => {
     const held = rows.reduce((s, r) => s + (r.value ?? r.basis), 0);
     const basis = rows.reduce((s, r) => s + r.basis, 0);
     const day = rows.reduce((s, r) => s + (r.dayAbs || 0), 0);
+    /* free cash is derived: what went in, less what is tied up in positions.
+       a manual value overrides it — needed after a sale returns money. */
+    const manual = cashOverride !== "" && cashOverride !== null && cashOverride !== undefined;
+    const cash = manual ? toNum(cashOverride) : deposits + realized - basis;
     const total = held + cash;
     return {
-      rows,
-      held,
-      cash,
-      deposits,
-      total,
-      day,
-      basis,
+      rows, held, cash, deposits, realized, total, day, basis, manual,
+      autoCash: deposits + realized - basis,
       profit: deposits ? total - deposits : held - basis,
-      profitPct: deposits
-        ? ((total - deposits) / deposits) * 100
-        : basis
-        ? ((held - basis) / basis) * 100
-        : 0,
+      profitPct: deposits ? ((total - deposits) / deposits) * 100 : basis ? ((held - basis) / basis) * 100 : 0,
+      dayPct: held ? (day / held) * 100 : 0,
       hasDeposits: deposits > 0,
       dry: total ? (cash / total) * 100 : 0,
     };
@@ -644,25 +839,42 @@ export default function Dashboard() {
 
   const byOwner = useMemo(() => {
     const m = {};
-    OWNERS.forEach((o) => {
+    visible.forEach((o) => {
       m[o.id] = book(
-        allRows.filter((r) => r.owner === o.id),
-        toNum(data.cash[o.id]),
-        toNum(data.deposits[o.id])
+        rowsOf(o.id),
+        data.cash[o.id],
+        toNum(data.deposits[o.id]),
+        toNum((data.realized || {})[o.id])
       );
     });
     return m;
-  }, [allRows, data]);
+  }, [visible, rowsOf, data]);
 
-  const grand = useMemo(
-    () =>
-      book(
-        allRows,
-        OWNERS.reduce((s, o) => s + toNum(data.cash[o.id]), 0),
-        OWNERS.reduce((s, o) => s + toNum(data.deposits[o.id]), 0)
-      ),
-    [allRows, data]
-  );
+  const allRows = useMemo(() => visible.flatMap((o) => byOwner[o.id]?.rows || []), [visible, byOwner]);
+
+  const grand = useMemo(() => {
+    const g = book(
+      allRows,
+      "",
+      visible.reduce((s, o) => s + toNum(data.deposits[o.id]), 0),
+      visible.reduce((s, o) => s + toNum((data.realized || {})[o.id]), 0)
+    );
+    /* each brother may have overridden his own cash, so total it per book */
+    const cash = visible.reduce((s, o) => s + (byOwner[o.id]?.cash || 0), 0);
+    const total = g.held + cash;
+    return {
+      ...g,
+      cash,
+      total,
+      profit: g.deposits ? total - g.deposits : g.held - g.basis,
+      profitPct: g.deposits
+        ? ((total - g.deposits) / g.deposits) * 100
+        : g.basis
+        ? ((g.held - g.basis) / g.basis) * 100
+        : 0,
+      dry: total ? (cash / total) * 100 : 0,
+    };
+  }, [allRows, visible, data, byOwner]);
 
   /* ---- permissions ---- */
   const canEdit = (owner) => me === "mark" || me === owner;
@@ -670,7 +882,7 @@ export default function Dashboard() {
 
   /* ---- mutations ---- */
   const changeMoney = (field, owner, v) =>
-    persist({ ...data, [field]: { ...data[field], [owner]: v.replace(/[^\d.]/g, "") } });
+    persist({ ...data, [field]: { ...data[field], [owner]: String(v).replace(/[^\d.]/g, "") } });
 
   const addPosition = (owner) => {
     const ticker = draft.ticker.trim().toUpperCase();
@@ -687,14 +899,50 @@ export default function Dashboard() {
     setDraft({ ticker: "", qty: "", cost: "" });
   };
 
-  const deletePosition = (owner, id) => {
-    setConfirmDel(null);
+
+  const editPosition = (owner, id, fn) =>
     persist({
       ...data,
       positions: {
         ...data.positions,
-        [owner]: data.positions[owner].filter((p) => p.id !== id),
+        [owner]: data.positions[owner].map((p) => (p.id === id ? fn(p) : p)),
       },
+    });
+
+  const buyMore = (owner, id, addQty, addPrice) => {
+    setAdjust(null);
+    editPosition(owner, id, (p) => {
+      const qty = p.qty + addQty;
+      return { ...p, qty, cost: (p.qty * p.cost + addQty * addPrice) / qty };
+    });
+  };
+
+  /* A sale frees the cost basis of the sold shares automatically, since basis
+     drops. Banking the gross proceeds on top would count that money twice, so
+     only the realized gain is stored. */
+  const sellSome = (owner, id, sellQty, sellPrice) => {
+    setAdjust(null);
+    const pos = (data.positions[owner] || []).find((p) => p.id === id);
+    if (!pos) return;
+    const gain = sellQty * (sellPrice - pos.cost);
+    const realized = { ...(data.realized || {}) };
+    realized[owner] = String(toNum(realized[owner]) + gain);
+    const list = data.positions[owner]
+      .map((p) => (p.id === id ? { ...p, qty: p.qty - sellQty } : p))
+      .filter((p) => p.qty > 0.0000001);
+    persist({ ...data, realized, positions: { ...data.positions, [owner]: list } });
+  };
+
+  const fixPosition = (owner, id, qty, cost) => {
+    setAdjust(null);
+    editPosition(owner, id, (p) => ({ ...p, qty, cost }));
+  };
+
+  const deletePosition = (owner, id) => {
+    setConfirmDel(null);
+    persist({
+      ...data,
+      positions: { ...data.positions, [owner]: data.positions[owner].filter((p) => p.id !== id) },
     });
   };
 
@@ -709,14 +957,7 @@ export default function Dashboard() {
             ? {
                 ...p,
                 call: action
-                  ? {
-                      action,
-                      note,
-                      date: new Date().toLocaleDateString("he-IL", {
-                        day: "2-digit",
-                        month: "2-digit",
-                      }),
-                    }
+                  ? { action, note, date: new Date().toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit" }) }
                   : null,
               }
             : p
@@ -726,375 +967,228 @@ export default function Dashboard() {
   };
 
   const pickMe = (owner) => {
-    try {
-      window.localStorage.setItem("fam-me", owner);
-    } catch (e) {}
+    try { window.localStorage.setItem("fam-me", owner); } catch (e) {}
     setMe(owner);
   };
-
-  const clearMe = () => {
-    try {
-      window.localStorage.removeItem("fam-me");
-    } catch (e) {}
+  const signOut = () => {
+    try { window.localStorage.removeItem("fam-me"); } catch (e) {}
     setMe(null);
+    setData(EMPTY);
+    setHistory([]);
     setEdit(false);
   };
 
   /* ---- render ---- */
 
-  if (!ready)
-    return (
-      <div className="app wrap">
-        <div className="empty" style={{ color: "var(--mut)" }}>טוען…</div>
-      </div>
-    );
-
+  if (!ready) return <div className="gate"><span className="hint">טוען…</span></div>;
   if (!me) return <Gate onPick={pickMe} />;
 
-  const activeBook = tab === "manager" ? grand : byOwner[tab];
-  const editableOwners = OWNERS.filter((o) => canEdit(o.id));
-  const priced = allRows.filter((r) => r.plPct !== null);
-  const maxAbs = Math.max(1, ...priced.map((r) => Math.abs(r.plPct)));
+  const isOverview = tab === "overview";
+  const bk = isOverview ? grand : byOwner[tab] || grand;
+  const editableOwners = visible.filter((o) => canEdit(o.id));
+  const chartKeys = isOverview ? visible.map((o) => o.id) : [tab];
+
+  const ownerSlices = visible
+    .map((o) => ({ name: o.label, value: byOwner[o.id]?.held || 0, color: o.color }))
+    .filter((s) => s.value > 0);
+
+  const holdingSlices = (isOverview ? allRows : byOwner[tab]?.rows || [])
+    .slice()
+    .sort((a, b) => (b.value ?? b.basis) - (a.value ?? a.basis))
+    .map((r, i) => ({ name: r.ticker, value: r.value ?? r.basis, color: PALETTE[i % PALETTE.length] }));
+
   const attention = allRows
     .filter((r) => !r.call || (r.day !== null && Math.abs(r.day) >= 4))
     .slice(0, 6);
 
   return (
-    <div className="app">
-      <div className="top">
-        <div className="toprow">
-          <div>
-            <div className="kicker">
-              {tab === "manager" ? "שווי כולל בניהול" : `תיק ${ownerOf(tab).he}`}
-            </div>
-            <div className="big" dir="ltr">
-              {usd(activeBook.total, 0)}
-            </div>
-            <div className={"sub " + tone(activeBook.profit)} dir="ltr">
-              {usd(activeBook.profit, 0)} ({pct(activeBook.profitPct)})
-              <span style={{ color: "var(--mut)", fontWeight: 400 }}>
-                {" · היום "}
-                {usd(activeBook.day, 0)}
-              </span>
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 7 }}>
-            <button className="iconbtn" onClick={refresh} disabled={loading} aria-label="רענון">
-              <RefreshCw size={17} className={loading ? "spin" : ""} />
-            </button>
-            {(tab === "manager" || canEdit(tab)) && (
-              <button
-                className="iconbtn"
-                data-on={edit ? 1 : 0}
-                onClick={() => {
-                  setEdit((e) => !e);
-                  setOpenCall(null);
-                  setConfirmDel(null);
-                }}
-                aria-label="עריכה"
-              >
-                {edit ? <Check size={17} /> : <Pencil size={16} />}
-              </button>
-            )}
+    <div className="shell">
+      <div className="head">
+        <div>
+          <div className="hello">שלום, {ownerOf(me).he}</div>
+          <div className="date">
+            {todayHe()}
+            {stamp ? ` · עודכן ${stamp}` : ""}
           </div>
         </div>
-
-        <div className="seg">
-          <button data-on={tab === "manager" ? 1 : 0} onClick={() => setTab("manager")}>
-            מנהל
+        <div className="headbtns">
+          <button className="icb" onClick={refresh} disabled={loading} aria-label="רענון">
+            <RefreshCw size={18} className={loading ? "spin" : ""} />
           </button>
-          {OWNERS.map((o) => (
-            <button key={o.id} data-on={tab === o.id ? 1 : 0} onClick={() => setTab(o.id)}>
-              {o.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="statusrow">
-          <span>
-            {loading ? "מושך מחירים…" : stamp ? `עודכן ${stamp}` : "לא נמשכו מחירים עדיין"}
-          </span>
-          <span style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            {edit && <span style={{ color: "var(--blue2)" }}>מצב עריכה</span>}
-            {!edit && tab !== "manager" && !canEdit(tab) && <span>צפייה בלבד</span>}
+          {(isOverview ? editableOwners.length > 0 : canEdit(tab)) && (
             <button
-              onClick={clearMe}
-              style={{
-                background: "none",
-                border: "none",
-                color: "var(--mut)",
-                fontSize: 11,
-                cursor: "pointer",
-                padding: 0,
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-              }}
+              className="icb"
+              data-on={edit ? 1 : 0}
+              onClick={() => { setEdit((e) => !e); setOpenCall(null); setConfirmDel(null); }}
+              aria-label="עריכה"
             >
-              <span
-                style={{ width: 6, height: 6, borderRadius: 99, background: ownerOf(me).color }}
-              />
-              {ownerOf(me).label}
+              {edit ? <Check size={18} /> : <Pencil size={17} />}
             </button>
-          </span>
+          )}
+          <button className="icb" onClick={signOut} aria-label="החלפת משתמש">
+            <LogOut size={17} />
+          </button>
         </div>
       </div>
 
-      <div className="wrap">
+      <div className="page">
         {err && <div className="banner bad">{err}</div>}
 
-        {tab === "manager" ? (
-          <>
-            <CapitalStats b={grand} />
+        <div className="kpis">
+          <Kpi
+            label={isOverview ? "שווי כולל" : "שווי התיק"}
+            value={usd(bk.total, 0)}
+            delta={bk.hasDeposits ? bk.profitPct : null}
+            foot={bk.hasDeposits ? "מול ההפקדות" : "הזינו הפקדות לתשואה מלאה"}
+          />
+          <Kpi label="רווח והפסד" value={usd(bk.profit, 0)} foot={bk.hasDeposits ? "כולל מימושים" : "על פוזיציות פתוחות"} />
+          <Kpi
+            label="פנוי להשקעה"
+            value={usd(bk.cash, 0)}
+            foot={bk.manual ? "הוזן ידנית" : "הופקד פחות ההשקעות"}
+          />
+          <Kpi label="תנועת היום" value={usd(bk.day, 0)} delta={bk.dayPct} />
+        </div>
 
-            {!grand.hasDeposits && (
-              <div className="banner">
-                הזינו כמה כסף הופקד בכל תיק כדי לראות תשואה אמיתית ולא רק רווח על הפוזיציות
-                הפתוחות.
-              </div>
-            )}
+        {!bk.hasDeposits && (
+          <div className="banner">
+            הזינו כמה כסף הופקד לתיק כדי לראות תשואה אמיתית, ולא רק רווח על הפוזיציות הפתוחות.
+          </div>
+        )}
 
-            {edit && (
-              <MoneyEditor data={data} owners={editableOwners} onChange={changeMoney} />
-            )}
+        {edit && (
+          <MoneyEditor
+            data={data}
+            owners={isOverview ? editableOwners : [ownerOf(tab)]}
+            books={byOwner}
+            onChange={changeMoney}
+          />
+        )}
 
-            <div className="card">
-              <div className="ttl">התיקים</div>
-              {OWNERS.map((o) => {
-                const b = byOwner[o.id];
-                return (
-                  <div className="prow" key={o.id}>
-                    <i className="rail" style={{ background: o.color }} />
-                    <div className="grow">
-                      <div className="name">{o.label}</div>
-                      <div className="meta" dir="ltr">
-                        {b.rows.length} פוזיציות · {usd(b.cash, 0)} פנוי
-                      </div>
-                      <div className="bar">
-                        <i
-                          style={{
-                            width: Math.min(Math.max(b.dry, 1), 100) + "%",
-                            background: "var(--cash)",
-                            opacity: 0.7,
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className="right">
-                      <div className="rv" dir="ltr">{usd(b.total, 0)}</div>
-                      <div className={"rd " + tone(b.profit)} dir="ltr">
-                        {pct(b.profitPct)}
-                      </div>
-                    </div>
+        <div className="card">
+          <div className="ctitle">שווי לאורך זמן</div>
+          <div className="csub">נבנה מתצלום שנשמר בכל רענון. הפקדות אינן נספרות כרווח.</div>
+          <TrendChart history={history} keys={chartKeys} />
+        </div>
+
+        {isOverview && me === "mark" && ownerSlices.length > 0 && (
+          <div className="card">
+            <div className="ctitle">חלוקה בין התיקים</div>
+            <div className="csub">לפי שווי האחזקות, בלי מזומן</div>
+            <Donut slices={ownerSlices} centerValue={usd(grand.held, 0)} centerLabel="מושקע" />
+          </div>
+        )}
+
+        <div className="card">
+          <div className="ctitle">פיזור אחזקות</div>
+          <div className="csub">כל {holdingSlices.length} הפוזיציות, לפי שווי</div>
+          <Donut
+            slices={holdingSlices}
+            centerValue={String(holdingSlices.length)}
+            centerLabel="פוזיציות"
+          />
+        </div>
+
+        {isOverview && me === "mark" && (
+          <div className="card">
+            <div className="ctitle">דורש החלטה</div>
+            <div className="csub">בלי הוראה, או תנועה חדה היום</div>
+            {attention.length === 0 ? (
+              <div className="hint">לכל פוזיציה יש הוראה ואין תנועות חריגות.</div>
+            ) : (
+              attention.map((r) => (
+                <div className="row" key={r.id}>
+                  <div className="sym">{r.ticker.slice(0, 4)}</div>
+                  <div className="grow">
+                    <div className="t1" dir="ltr">{r.ticker}</div>
+                    <div className="t2">{ownerOf(r.owner).label}</div>
                   </div>
-                );
-              })}
-            </div>
-
-            <div className="card">
-              <div className="ttl">שווי אחזקות לאורך זמן</div>
-              <ValueChart history={history} />
-            </div>
-
-            <div className="card">
-              <div className="ttl">רווח והפסד לפי פוזיציה</div>
-              {priced.length === 0 ? (
-                <div className="hint" style={{ marginTop: 0 }}>ממתין למחירים.</div>
-              ) : (
-                [...priced]
-                  .sort((a, b) => b.plPct - a.plPct)
-                  .map((r) => {
-                    const w = (Math.abs(r.plPct) / maxAbs) * 50;
-                    const gain = r.plPct >= 0;
-                    return (
-                      <div key={r.id} style={{ marginBottom: 14 }}>
-                        <div
-                          style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}
-                        >
-                          <span dir="ltr" style={{ fontWeight: 600 }}>
-                            {r.ticker}
-                            <span style={{ color: "var(--mut)", fontWeight: 400, marginLeft: 8 }}>
-                              {ownerOf(r.owner).label}
-                            </span>
-                          </span>
-                          <span className={tone(r.pl)} dir="ltr" style={{ fontWeight: 500 }}>
-                            {usd(r.pl, 0)} · {pct(r.plPct)}
-                          </span>
-                        </div>
-                        <div className="dv" dir="ltr">
-                          <i
-                            style={{
-                              [gain ? "left" : "right"]: "50%",
-                              width: Math.max(w, 0.7) + "%",
-                              background: gain ? "var(--up)" : "var(--down)",
-                            }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })
-              )}
-            </div>
-
-            <div className="card">
-              <div className="ttl">פיזור אחזקות</div>
-              {allRows.length === 0 ? (
-                <div className="hint" style={{ marginTop: 0 }}>אין עדיין פוזיציות.</div>
-              ) : (
-                [...allRows]
-                  .sort((a, b) => (b.value ?? b.basis) - (a.value ?? a.basis))
-                  .slice(0, 12)
-                  .map((r) => {
-                    const w = grand.held ? ((r.value ?? r.basis) / grand.held) * 100 : 0;
-                    return (
-                      <div key={r.id} style={{ marginBottom: 12 }}>
-                        <div
-                          style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}
-                        >
-                          <span dir="ltr" style={{ fontWeight: 600 }}>
-                            {r.ticker}
-                            <span style={{ color: "var(--mut)", fontWeight: 400, marginLeft: 8 }}>
-                              {ownerOf(r.owner).label}
-                            </span>
-                          </span>
-                          <span style={{ color: "var(--mut)" }} dir="ltr">
-                            {w.toFixed(1)}%
-                          </span>
-                        </div>
-                        <div className="bar">
-                          <i
-                            style={{
-                              width: Math.max(w, 1.5) + "%",
-                              background: ownerOf(r.owner).color,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })
-              )}
-            </div>
-
-            <div className="card">
-              <div className="ttl">דורש החלטה</div>
-              {attention.length === 0 ? (
-                <div className="hint" style={{ marginTop: 0 }}>
-                  לכל פוזיציה יש הוראה ואין תנועות חריגות היום.
-                </div>
-              ) : (
-                attention.map((r) => (
-                  <div className="prow" key={r.id}>
-                    <div className="grow">
-                      <span className="name" dir="ltr">{r.ticker}</span>
-                      <span style={{ fontSize: 11.5, color: "var(--mut)", marginRight: 8 }}>
-                        {ownerOf(r.owner).label}
-                      </span>
-                      <div className="meta">{!r.call ? "אין הוראה" : "תנועה חדה היום"}</div>
-                    </div>
-                    <div className={"rd " + tone(r.day)} dir="ltr">
+                  <div className="rt">
+                    <CallPill call={r.call} />
+                    <div className={"b " + tone(r.day)} dir="ltr">
                       {r.day === null ? "—" : pct(r.day)}
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          </>
-        ) : (
-          <>
-            <CapitalStats b={byOwner[tab]} />
-
-            {edit && canEdit(tab) && (
-              <>
-                <MoneyEditor data={data} owners={editableOwners} onChange={changeMoney} />
-                <div className="card">
-                  <div className="ttl">הוספת פוזיציה ל{ownerOf(tab).he}</div>
-                  <div className="g3" style={{ marginBottom: 11 }}>
-                    <div>
-                      <span className="lbl">סימול</span>
-                      <input
-                        className="inp"
-                        dir="ltr"
-                        placeholder="AAPL"
-                        value={draft.ticker}
-                        onChange={(e) => setDraft({ ...draft, ticker: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <span className="lbl">כמות</span>
-                      <input
-                        className="inp"
-                        dir="ltr"
-                        inputMode="decimal"
-                        placeholder="12"
-                        value={draft.qty}
-                        onChange={(e) => setDraft({ ...draft, qty: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <span className="lbl">מחיר קנייה</span>
-                      <input
-                        className="inp"
-                        dir="ltr"
-                        inputMode="decimal"
-                        placeholder="180.5"
-                        value={draft.cost}
-                        onChange={(e) => setDraft({ ...draft, cost: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                  <button className="btn pri" onClick={() => addPosition(tab)}>
-                    <Plus size={16} /> הוספה
-                  </button>
                 </div>
-              </>
+              ))
+            )}
+          </div>
+        )}
+
+        {!isOverview && (
+          <>
+            {edit && canEdit(tab) && (
+              <AddPosition
+                draft={draft}
+                setDraft={setDraft}
+                onAdd={() => addPosition(tab)}
+                ownerHe={me === "mark" ? ownerOf(tab).he : ""}
+              />
             )}
 
-            {byOwner[tab].rows.length === 0 ? (
+            {(byOwner[tab]?.rows || []).length === 0 ? (
               <div className="empty">
-                <div style={{ fontSize: 17, fontWeight: 600, marginBottom: 6 }}>התיק ריק</div>
-                <div style={{ fontSize: 13, color: "var(--mut)" }}>
+                <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 6 }}>התיק ריק</div>
+                <div className="hint">
                   {canEdit(tab)
-                    ? "פתחו מצב עריכה בכפתור העיפרון והוסיפו את המניה הראשונה."
-                    : `רק ${ownerOf(tab).he} ומארק יכולים להוסיף פוזיציות לתיק הזה.`}
+                    ? "לחצו על העיפרון למעלה והוסיפו את המניה הראשונה."
+                    : "אין כאן עדיין פוזיציות."}
                 </div>
               </div>
             ) : (
               byOwner[tab].rows.map((r) => (
                 <PositionCard
                   key={r.id}
-                  row={r}
+                  r={r}
                   edit={edit}
                   canEdit={canEdit(tab)}
                   canCall={canCall}
-                  editingCall={openCall === r.id}
-                  confirmDel={confirmDel === r.id}
+                  editing={openCall === r.id}
+                  adjusting={adjust === r.id}
+                  confirming={confirmDel === r.id}
                   research={research[r.ticker]}
                   onOpenCall={setOpenCall}
+                  onOpenAdjust={setAdjust}
+                  onCancelAdjust={() => setAdjust(null)}
+                  onBuy={buyMore}
+                  onSell={sellSome}
+                  onFix={fixPosition}
                   onSaveCall={saveCall}
-                  onClearCall={(o, id) => saveCall(o, id, null, "")}
                   onCancelCall={() => setOpenCall(null)}
                   onAskDelete={setConfirmDel}
                   onCancelDelete={() => setConfirmDel(null)}
                   onDelete={deletePosition}
                   onResearch={runResearch}
                   onCloseResearch={(t) =>
-                    setResearch((s) => {
-                      const n = { ...s };
-                      delete n[t];
-                      return n;
-                    })
+                    setResearch((s) => { const n = { ...s }; delete n[t]; return n; })
                   }
                 />
               ))
             )}
           </>
         )}
+
+        <div className="foot">
+          מחירים מ-Yahoo Finance, מתעכבים בדרך כלל ברבע שעה — למעקב, לא לביצוע עסקאות.
+          {me !== "mark" && " התיקים של האחים האחרים אינם נטענים למכשיר שלך."}
+          {" "}הכלי לא מהווה ייעוץ השקעות.
+        </div>
       </div>
 
-      <div className="foot">
-        המחירים מגיעים מ-Yahoo Finance ועשויים להתעכב — הם למעקב, לא לביצוע עסקאות. גרף השווי
-        עוקב אחרי האחזקות בלבד, כך שהפקדה חדשה לא נראית כמו רווח. הכלי לא מהווה ייעוץ השקעות.
-      </div>
+      {me === "mark" && (
+        <nav className="nav">
+          <button data-on={isOverview ? 1 : 0} onClick={() => { setTab("overview"); setEdit(false); }}>
+            <LayoutGrid size={19} />
+            סקירה
+          </button>
+          {OWNERS.map((o) => (
+            <button key={o.id} data-on={tab === o.id ? 1 : 0} onClick={() => { setTab(o.id); setEdit(false); }}>
+              <Wallet size={19} />
+              {o.label}
+            </button>
+          ))}
+        </nav>
+      )}
     </div>
   );
 }
