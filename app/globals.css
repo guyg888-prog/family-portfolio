@@ -461,3 +461,23 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
   .cash-tile-top { flex: 0 0 auto; }
   .cash-tile-content { flex: 1; }
 }
+
+/* Saved action feedback */
+.app-toast { position: fixed; bottom: 24px; left: 24px; z-index: 300; display: flex; align-items: center; gap: 10px; width: max-content; max-width: calc(100vw - 36px); padding: 13px 15px; background: #123c35; color: white; border: 1px solid rgba(255,255,255,.15); border-radius: 15px; box-shadow: 0 14px 36px rgba(0,0,0,.2); font-size: 13px; font-weight: 650; animation: toastIn .25s ease-out; }
+.app-toast > svg { color: #88edbb; flex: none; }
+.app-toast button { display: grid; place-items: center; border: 0; background: transparent; color: inherit; cursor: pointer; margin-inline-start: 7px; }
+.app-toast-error { background: #5f1d24; }
+.app-toast-error > svg { color: #ffb4b4; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+/* Explicit destructive confirmation */
+.delete-dialog { display: flex; flex-direction: column; gap: 13px; }
+.delete-dialog-icon { display: grid; place-items: center; width: 50px; height: 50px; background: #fff0f0; color: #d92d20; border-radius: 14px; }
+.delete-dialog p { margin: 0; font-size: 17px; line-height: 1.6; }
+.delete-dialog > span { color: var(--mut); font-size: 13px; }
+.delete-dialog-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 12px; }
+.delete-dialog-actions .btn.dg { background: #d92d20; color: white; border-color: #d92d20; display: inline-flex; align-items: center; gap: 7px; }
+/* Compact live quote status next to refresh */
+.refresh-status { display: flex; flex-direction: column; gap: 3px; align-items: flex-end; color: var(--mut); font-size: 12px; white-space: nowrap; }
+.refresh-status small { color: #098267; font-size: 10px; }
+@media (max-width: 650px) { .refresh-status { font-size: 10px; } .refresh-status small { display: none; } .app-toast { left: 12px; bottom: 12px; } }
+@media (prefers-reduced-motion: reduce) { .app-toast { animation: none; } }
