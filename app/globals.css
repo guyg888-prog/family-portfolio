@@ -516,3 +516,7 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 /* Compact stock trend sparklines */
 .stock-card .stock-chart { height: 48px; margin-top: 0; }
 @media (max-width: 600px) { .stock-card .stock-chart { height: 54px; } }
+
+/* Highlight the stock identity and current price without adding visual weight */
+.stock-card .stock-card-head { background: #f5f7fc; border-bottom: 1px solid #e0e6f1; border-radius: 13px 13px 0 0; margin: -16px -16px 12px; padding: 16px 16px 14px; }
+@media (max-width: 600px) { .stock-card .stock-card-head { padding: 14px 16px 12px; } }

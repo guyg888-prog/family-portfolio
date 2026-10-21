@@ -748,7 +748,6 @@ export default function Dashboard() {
   const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState(null);
-  const [stamp, setStamp] = useState(null);
   const [draft, setDraft] = useState({ ticker: "", qty: "", cost: "" });
   const [openCall, setOpenCall] = useState(null);
   const [confirmDel, setConfirmDel] = useState(null);
@@ -834,7 +833,6 @@ export default function Dashboard() {
       const q = await res.json();
       setQuotes((p) => ({ ...p, ...q }));
       const now = new Date();
-      setStamp(now.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }));
       setLastUpdated(now);
 
       const point = { d: isoDay() };
@@ -865,7 +863,7 @@ export default function Dashboard() {
   }, [me, tickers.length, refresh]);
 
   useEffect(() => {
-    if (me && tickers.length && !stamp) refresh();
+    if (me && tickers.length && !lastUpdated) refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me, tickers.length]);
 
