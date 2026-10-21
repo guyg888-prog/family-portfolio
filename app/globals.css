@@ -351,3 +351,34 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 .stock-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin-top: 15px; }
 @media (max-width: 780px) { .stock-grid { grid-template-columns: 1fr; } }
 @media (max-width: 400px) { .stock-card { padding: 14px; } .stock-price strong { font-size: 15px; } .stock-performance { gap: 7px; } }
+
+/* Stock card refinement: three-column desktop grid and stronger visual hierarchy */
+.stock-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.stock-card { padding: 16px; }
+.stock-card-head { align-items: flex-start; gap: 9px; }
+.stock-logo { width: 42px; height: 42px; }
+.stock-ticker { font-size: 19px; }
+.stock-price { gap: 6px; margin-inline-start: auto; }
+.stock-price-line { display: flex; align-items: baseline; justify-content: flex-end; gap: 6px; white-space: nowrap; }
+.stock-price-line span { color: var(--mut); font-size: 11px; font-weight: 500; }
+.stock-price-line strong { font-size: 17px; }
+.stock-price > span { font-size: 13px; }
+.stock-chart { height: 106px; margin-top: 3px; }
+.stock-history { margin-top: 12px; }
+.stock-ranges { justify-content: space-between; gap: 1px; }
+.stock-ranges button { padding: 5px 4px; font-size: 10px; }
+.stock-stats { gap: 12px 10px; padding: 14px 0; }
+.stock-stats span { font-size: 12px; }
+.stock-stats strong { font-size: 17px; }
+.stock-performance { padding: 17px 0 14px; gap: 9px; }
+.stock-performance span { font-size: 12px; font-weight: 600; }
+.stock-performance strong { font-size: clamp(20px, 2.2vw, 26px); font-weight: 800; line-height: 1.2; letter-spacing: -.025em; }
+.stock-performance strong .stock-pct { display: block; font-size: 14px; margin-top: 5px; }
+.stock-actions { display: flex; gap: 5px; flex-wrap: nowrap; justify-content: space-between; margin-top: 10px; }
+.stock-actions .btn { flex: 1 1 auto; min-width: 0; padding: 8px 7px; font-size: 11px; justify-content: center; white-space: nowrap; }
+.stock-actions .btn.dg { flex: 0 0 auto; }
+.donut-tooltip { display: flex; flex-direction: column; gap: 5px; padding: 10px 14px; background: white; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); font-size: 13px; }
+.donut-tooltip span { color: var(--mut); }
+@media (max-width: 1120px) { .stock-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 730px) { .stock-grid { grid-template-columns: 1fr; } .stock-performance strong { font-size: 25px; } }
+@media (max-width: 400px) { .stock-actions { flex-wrap: wrap; } .stock-actions .btn { flex: 1 1 35%; } }
