@@ -484,3 +484,9 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 
 .investments-heading { margin: 28px 0 16px; font-size: 23px; font-weight: 800; letter-spacing: -.02em; color: var(--navy); }
 @media (max-width: 600px) { .investments-heading { font-size: 21px; margin-top: 22px; } }
+
+/* Inline cash title action instead of detached top corner */
+.cash-tile-title { display: flex; align-items: center; gap: 8px; }
+.cash-tile-title .cash-edit { display: inline-grid; place-items: center; width: 28px; height: 28px; padding: 0; border-radius: 8px; background: transparent; border-color: transparent; color: #087d98; }
+.cash-tile-title .cash-edit:hover { background: #dff5fa; border-color: #cce6f0; }
+.cash-tile-content { width: 100%; }
