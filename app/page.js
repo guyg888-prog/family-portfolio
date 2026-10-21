@@ -25,6 +25,9 @@ import {
   LayoutGrid,
   Wallet,
   LogOut,
+  TrendingUp,
+  TrendingDown,
+  Coins,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -111,15 +114,29 @@ function PortfolioSummary({ book, isOverview }) {
         {change("שינוי יומי", book.day, book.dayPct)}
         {change("שינוי ממועד הקנייה", purchaseChange, purchasePct)}
       </div>
-      <div className="summary-cash">פנוי להשקעה <strong dir="ltr">{usd(book.cash, 0)}</strong></div>
+      
     </section>
   );
+}
+
+function CashTile({ cash }) {
+  return <aside className="cash-tile"><div className="cash-tile-icon"><Coins size={22} /></div><div><span>פנוי להשקעה</span><strong dir="ltr">{usd(cash, 0)}</strong><small>יתרה זמינה בחשבון</small></div></aside>;
+}
+
+function Modal({ title, onClose, children }) {
+  useEffect(() => {
+    const onKey = (event) => { if (event.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  return <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section className="modal-panel" role="dialog" aria-modal="true" aria-label={title}><header className="modal-heading"><h2>{title}</h2><button className="icb" onClick={onClose} aria-label="סגירה"><X size={19}/></button></header>{children}</section></div>;
 }
 
 function Donut({ slices, centerValue, centerLabel, expanded = false }) {
   const total = slices.reduce((s, x) => s + x.value, 0);
   if (!total)
     return <div className="hint">אין עדיין אחזקות להצגה.</div>;
+  const [active, setActive] = useState(null);
   return (
     <div className={"donutwrap" + (expanded ? " donutwrap-expanded" : "")}>
       <div className="donut">
@@ -133,9 +150,11 @@ function Donut({ slices, centerValue, centerLabel, expanded = false }) {
               paddingAngle={2}
               stroke="none"
               isAnimationActive={false}
+              onMouseEnter={(_, index) => setActive(index)}
+              onMouseLeave={() => setActive(null)}
             >
               {slices.map((s, i) => (
-                <Cell key={i} fill={s.color} />
+                <Cell key={i} fill={s.color} opacity={active === null || active === i ? 1 : 0.35} />
               ))}
             </Pie>
             <Tooltip formatter={(value, name, item) => [usd(value), item?.payload?.name || name]} content={({ active, payload }) => {
@@ -152,12 +171,11 @@ function Donut({ slices, centerValue, centerLabel, expanded = false }) {
       </div>
       <div className="legend">
         {slices.map((s, i) => (
-          <div className="lrow" key={i}>
+          <div className={"lrow" + (active === i ? " lrow-active" : "")} key={i} onMouseEnter={() => setActive(i)} onMouseLeave={() => setActive(null)}>
             <i className="dot" style={{ background: s.color }} />
             <span className="nm">{s.name}</span>
-            <span className="vl" dir="ltr">
-              {((s.value / total) * 100).toFixed(0)}%
-            </span>
+            <span className="vl" dir="ltr">{((s.value / total) * 100).toFixed(1)}%</span>
+            {expanded && <span className="legend-value" dir="ltr">{usd(s.value, 0)}</span>}
           </div>
         ))}
       </div>
@@ -741,6 +759,7 @@ export default function Dashboard() {
   const [confirmDel, setConfirmDel] = useState(null);
   const [adjust, setAdjust] = useState(null);
   const [research, setResearch] = useState({});
+  const [modal, setModal] = useState(null);
   const timer = useRef(null);
 
   /* ---- identity ---- */
@@ -958,6 +977,7 @@ export default function Dashboard() {
       },
     });
     setDraft({ ticker: "", qty: "", cost: "" });
+    setModal(null);
   };
 
 
@@ -972,6 +992,7 @@ export default function Dashboard() {
 
   const buyMore = (owner, id, addQty, addPrice) => {
     setAdjust(null);
+    setModal(null);
     editPosition(owner, id, (p) => {
       const qty = p.qty + addQty;
       return { ...p, qty, cost: (p.qty * p.cost + addQty * addPrice) / qty };
@@ -983,6 +1004,7 @@ export default function Dashboard() {
      only the realized gain is stored. */
   const sellSome = (owner, id, sellQty, sellPrice) => {
     setAdjust(null);
+    setModal(null);
     const pos = (data.positions[owner] || []).find((p) => p.id === id);
     if (!pos) return;
     const gain = sellQty * (sellPrice - pos.cost);
@@ -1073,6 +1095,7 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="headbtns">
+          {editableOwners.length > 0 && <button className="btn pri header-add" onClick={() => setModal({ type: "add", owner: isOverview ? editableOwners[0].id : tab })}><Plus size={17} /> <span>הוספת פוזיציה</span></button>}
           <button className="icb" onClick={refresh} disabled={loading} aria-label="רענון">
             <RefreshCw size={18} className={loading ? "spin" : ""} />
           </button>
@@ -1095,7 +1118,7 @@ export default function Dashboard() {
       <div className="page">
         {err && <div className="banner bad">{err}</div>}
 
-        <PortfolioSummary book={bk} isOverview={isOverview} />
+        <div className="summary-layout"><PortfolioSummary book={bk} isOverview={isOverview} /><CashTile cash={bk.cash} /></div>
 
         {!bk.hasDeposits && (
           <div className="banner">
@@ -1197,8 +1220,8 @@ export default function Dashboard() {
                   confirming={confirmDel === r.id}
                   research={research[r.ticker]}
                   onOpenCall={setOpenCall}
-                  onOpenAdjust={setAdjust}
-                  onCancelAdjust={() => setAdjust(null)}
+                  onOpenAdjust={(id) => setModal({ type: "edit", row: r })}
+                  onCancelAdjust={() => setModal(null)}
                   onBuy={buyMore}
                   onSell={sellSome}
                   onFix={fixPosition}
@@ -1207,10 +1230,8 @@ export default function Dashboard() {
                   onAskDelete={setConfirmDel}
                   onCancelDelete={() => setConfirmDel(null)}
                   onDelete={deletePosition}
-                  onResearch={runResearch}
-                  onCloseResearch={(t) =>
-                    setResearch((s) => { const n = { ...s }; delete n[t]; return n; })
-                  }
+                  onResearch={(ticker) => { setModal({ type: "research", ticker }); runResearch(ticker); }}
+                  onCloseResearch={() => setModal(null)}
                 />
               ))}</div>
             )}
@@ -1224,6 +1245,9 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {modal?.type === "add" && <Modal title="הוספת פוזיציה" onClose={() => setModal(null)}><div className="modal-owner">{editableOwners.length > 1 && <select className="inp" value={modal.owner} onChange={e => setModal({ ...modal, owner: e.target.value })}>{editableOwners.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}</select>}</div><AddPosition draft={draft} setDraft={setDraft} onAdd={() => addPosition(modal.owner)} /></Modal>}
+      {modal?.type === "edit" && <Modal title={`עריכת ${modal.row.ticker}`} onClose={() => setModal(null)}><PositionEditor row={modal.row} onBuy={(q,p) => buyMore(modal.row.owner,modal.row.id,q,p)} onSell={(q,p) => sellSome(modal.row.owner,modal.row.id,q,p)} onFix={(q,c) => { fixPosition(modal.row.owner,modal.row.id,q,c); setModal(null); }} onCancel={() => setModal(null)} /></Modal>}
+      {modal?.type === "research" && <Modal title={`ניתוח ${modal.ticker}`} onClose={() => setModal(null)}><Research ticker={modal.ticker} price={quotes[modal.ticker]?.price} entry={research[modal.ticker]} onRun={() => runResearch(modal.ticker)} onClose={() => setModal(null)} /></Modal>}
       {me === "mark" && (
         <nav className="nav">
           <button data-on={isOverview ? 1 : 0} onClick={() => { setTab("overview"); setEdit(false); }}>
