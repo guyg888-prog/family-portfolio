@@ -289,3 +289,25 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 .kpi .foot { font-size: 12.5px; line-height: 1.55; text-align: right; }
 .kpi .tag { font-size: 12.5px; }
 @media (max-width: 380px) { .kpi .val { font-size: 21px; } }
+
+/* Portfolio summary: account value first, changes at equal hierarchy */
+.portfolio-summary { background: var(--card); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); padding: clamp(20px, 4vw, 32px); margin-bottom: 12px; text-align: right; }
+.summary-title { color: var(--mut); font-size: clamp(16px, 2vw, 20px); font-weight: 500; }
+.summary-total { font-size: clamp(46px, 8vw, 78px); font-weight: 750; line-height: 1.2; letter-spacing: -.045em; text-align: right; margin: 12px 0 26px; color: var(--navy); }
+.summary-changes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.summary-change { min-width: 0; }
+.summary-change-label { color: var(--mut); font-size: clamp(13px, 1.6vw, 16px); margin-bottom: 6px; }
+.summary-change-amount { font-size: clamp(18px, 2.6vw, 27px); font-weight: 700; text-align: right; white-space: normal; }
+.summary-change-percent { font-size: .8em; margin-left: 8px; }
+.summary-cash { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 15px; color: var(--mut); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 13px; }
+.summary-cash strong { font-size: 17px; color: var(--ink); }
+@media (max-width: 520px) { .summary-changes { grid-template-columns: 1fr; gap: 20px; } .summary-total { font-size: clamp(38px, 11vw, 58px); } }
+/* Larger holdings visualization and two-column legend */
+.donutwrap-expanded { gap: clamp(20px, 4vw, 44px); align-items: center; }
+.donutwrap-expanded .donut { width: 260px; height: 260px; }
+.donutwrap-expanded .donutmid b { font-size: 28px; }
+.donutwrap-expanded .donutmid span { font-size: 13px; }
+.donutwrap-expanded .legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 20px; row-gap: 3px; flex: 1; min-width: 220px; }
+.donutwrap-expanded .lrow { min-width: 0; gap: 8px; }
+@media (max-width: 580px) { .donutwrap-expanded { justify-content: center; } .donutwrap-expanded .legend { flex-basis: 100%; } .donutwrap-expanded .donut { width: 240px; height: 240px; } }
+/* Individual position edit controls always visible for authorized owners */
