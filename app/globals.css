@@ -281,3 +281,11 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 }
 .calcrow b { color: var(--ink); font-weight: 700; }
 .calcrow b.down { color: var(--down); }
+
+/* KPI cards: right-aligned content and more legible typography */
+.kpi { direction: rtl; text-align: right; }
+.kpi .lab { font-size: 13.5px; line-height: 1.45; margin-bottom: 10px; }
+.kpi .val { font-size: clamp(23px, 2.6vw, 29px); line-height: 1.2; text-align: right; }
+.kpi .foot { font-size: 12.5px; line-height: 1.55; text-align: right; }
+.kpi .tag { font-size: 12.5px; }
+@media (max-width: 380px) { .kpi .val { font-size: 21px; } }
