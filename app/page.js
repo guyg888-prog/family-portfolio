@@ -183,8 +183,8 @@ function Donut({ slices, centerValue, centerLabel, expanded = false }) {
           <div className={"lrow" + (active === i ? " lrow-active" : "")} key={i} onMouseEnter={() => setActive(i)} onMouseLeave={() => setActive(null)}>
             <i className="dot" style={{ background: s.color }} />
             <span className="nm">{s.name}</span>
-            <span className="vl" dir="ltr">{((s.value / total) * 100).toFixed(1)}%</span>
             {expanded && <span className="legend-value" dir="ltr">{usd(s.value, 0)}</span>}
+            <span className="vl" dir="ltr">{((s.value / total) * 100).toFixed(1)}%</span>
           </div>
         ))}
       </div>
@@ -1107,15 +1107,12 @@ export default function Dashboard() {
           <div className="hello">שלום, {ownerOf(me).he}</div>
           <div className="date">
             {todayHe()}
-            {stamp ? ` · עודכן ${stamp}` : ""}
+
           </div>
         </div>
         <div className="headbtns">
           {editableOwners.length > 0 && <button className="btn pri header-add" onClick={() => setModal({ type: "add", owner: isOverview ? editableOwners[0].id : tab })}><Plus size={17} /> <span>הוספת פוזיציה</span></button>}
-          <span className="refresh-status" title="המחירים מתרעננים אוטומטית בכל דקה">{loading ? "מעדכן…" : lastUpdated ? `עודכן ב-${lastUpdated.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}` : "ממתין לעדכון"}<small>רענון אוטומטי · כל דקה</small></span>
-          <button className="icb" onClick={refresh} disabled={loading} aria-label="רענון">
-            <RefreshCw size={18} className={loading ? "spin" : ""} />
-          </button>
+          <div className="refresh-chip" title="המחירים מתרעננים אוטומטית בכל דקה"><div className="refresh-status"><span>{loading ? "מעדכן מחירים…" : lastUpdated ? `עודכן ב-${lastUpdated.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}` : "ממתין לעדכון"}</span><small><span className="refresh-dot" /> אוטומטי · כל דקה</small></div><button className="refresh-chip-button" onClick={refresh} disabled={loading} aria-label="רענון מחירים"><RefreshCw size={18} className={loading ? "spin" : ""} /></button></div>
           {(isOverview ? editableOwners.length > 0 : canEdit(tab)) && (
             <button
               className="icb"

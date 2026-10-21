@@ -490,3 +490,25 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 .cash-tile-title .cash-edit { display: inline-grid; place-items: center; width: 28px; height: 28px; padding: 0; border-radius: 8px; background: transparent; border-color: transparent; color: #087d98; }
 .cash-tile-title .cash-edit:hover { background: #dff5fa; border-color: #cce6f0; }
 .cash-tile-content { width: 100%; }
+
+/* One cohesive live-update control in the sticky toolbar */
+.refresh-chip { display: flex; align-items: center; gap: 9px; min-height: 48px; padding: 5px 6px 5px 13px; border: 1px solid #dce4f0; border-radius: 14px; background: #fff; box-shadow: 0 2px 7px rgba(18,26,63,.04); }
+.refresh-chip .refresh-status { align-items: flex-start; gap: 5px; font-size: 12px; font-weight: 700; color: var(--navy); line-height: 1.2; }
+.refresh-chip .refresh-status small { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; color: #087e65; }
+.refresh-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 3px #d9f7eb; }
+.refresh-chip-button { width: 37px; height: 37px; display: grid; place-items: center; flex: none; border: 0; border-radius: 10px; background: #f1f5fb; color: var(--navy); cursor: pointer; transition: background .2s; }
+.refresh-chip-button:hover { background: #e1eaf8; }
+.refresh-chip-button:disabled { opacity: .6; cursor: wait; }
+/* Compact single-line holdings legend */
+.donutwrap-expanded .legend { gap: 7px 9px; }
+.donutwrap-expanded .lrow { display: grid; grid-template-columns: 9px minmax(0,1fr) auto auto; gap: 8px; align-items: center; padding: 10px 11px; min-height: 43px; }
+.donutwrap-expanded .lrow .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.donutwrap-expanded .lrow .vl { white-space: nowrap; font-size: 12px; }
+.donutwrap-expanded .legend-value { grid-column: auto; justify-self: auto; white-space: nowrap; font-size: 11px; }
+@media (max-width: 700px) {
+ .refresh-chip { padding: 4px; gap: 0; min-height: 44px; }
+ .refresh-chip .refresh-status { display: none; }
+ .refresh-chip-button { width: 38px; height: 38px; }
+ .donutwrap-expanded .legend { grid-template-columns: 1fr; }
+}
+@media (min-width: 701px) and (max-width: 1120px) { .donutwrap-expanded .legend { grid-template-columns: 1fr; } }
