@@ -134,9 +134,9 @@ function Modal({ title, onClose, children }) {
 
 function Donut({ slices, centerValue, centerLabel, expanded = false }) {
   const total = slices.reduce((s, x) => s + x.value, 0);
+  const [active, setActive] = useState(null);
   if (!total)
     return <div className="hint">אין עדיין אחזקות להצגה.</div>;
-  const [active, setActive] = useState(null);
   return (
     <div className={"donutwrap" + (expanded ? " donutwrap-expanded" : "")}>
       <div className="donut">
@@ -692,11 +692,7 @@ function PositionCard(props) {
           ))}
         </div>
       )}
-      {!editing && !adjusting && research && (
-        <Research ticker={r.ticker} price={r.price} entry={research}
-          onRun={() => props.onResearch(r.ticker)}
-          onClose={() => props.onCloseResearch(r.ticker)} />
-      )}
+
       {canEdit && adjusting && (
         <PositionEditor row={r}
           onBuy={(q, p) => props.onBuy(r.owner, r.id, q, p)}
@@ -1188,7 +1184,7 @@ export default function Dashboard() {
 
         {!isOverview && (
           <>
-            {edit && canEdit(tab) && (
+            {false && edit && canEdit(tab) && (
               <AddPosition
                 draft={draft}
                 setDraft={setDraft}
