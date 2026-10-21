@@ -744,7 +744,6 @@ export default function Dashboard() {
   const [quotes, setQuotes] = useState({});
   const [me, setMe] = useState(null);
   const [tab, setTab] = useState(null);
-  const [edit, setEdit] = useState(false);
   const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState(null);
@@ -1072,7 +1071,6 @@ export default function Dashboard() {
     setMe(null);
     setData(EMPTY);
     setHistory([]);
-    setEdit(false);
   };
 
   /* ---- render ---- */
@@ -1111,16 +1109,6 @@ export default function Dashboard() {
         <div className="headbtns">
           {editableOwners.length > 0 && <button className="btn pri header-add" onClick={() => setModal({ type: "add", owner: isOverview ? editableOwners[0].id : tab })}><Plus size={17} /> <span>הוספת פוזיציה</span></button>}
           <div className="refresh-chip" title="המחירים מתרעננים אוטומטית בכל דקה"><div className="refresh-status"><span>{loading ? "מעדכן מחירים…" : lastUpdated ? `עודכן ב-${lastUpdated.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}` : "ממתין לעדכון"}</span><small><span className="refresh-dot" /> אוטומטי · כל דקה</small></div><button className="refresh-chip-button" onClick={refresh} disabled={loading} aria-label="רענון מחירים"><RefreshCw size={18} className={loading ? "spin" : ""} /></button></div>
-          {(isOverview ? editableOwners.length > 0 : canEdit(tab)) && (
-            <button
-              className="icb"
-              data-on={edit ? 1 : 0}
-              onClick={() => { setEdit((e) => !e); setOpenCall(null); setConfirmDel(null); }}
-              aria-label="עריכה"
-            >
-              {edit ? <Check size={18} /> : <Pencil size={17} />}
-            </button>
-          )}
           <button className="icb" onClick={signOut} aria-label="החלפת משתמש">
             <LogOut size={17} />
           </button>
@@ -1136,15 +1124,6 @@ export default function Dashboard() {
           <div className="banner">
             הזינו כמה כסף הופקד לתיק כדי לראות תשואה אמיתית, ולא רק רווח על הפוזיציות הפתוחות.
           </div>
-        )}
-
-        {edit && (
-          <MoneyEditor
-            data={data}
-            owners={isOverview ? editableOwners : [ownerOf(tab)]}
-            books={byOwner}
-            onChange={changeMoney}
-          />
         )}
 
         <div className="card">
@@ -1206,7 +1185,7 @@ export default function Dashboard() {
                 <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 6 }}>התיק ריק</div>
                 <div className="hint">
                   {canEdit(tab)
-                    ? "לחצו על כפתור העריכה למעלה כדי להוסיף את המניה הראשונה."
+                    ? "לחצו על ״הוספת פוזיציה״ למעלה כדי להוסיף את המניה הראשונה."
                     : "אין כאן עדיין פוזיציות."}
                 </div>
               </div>
@@ -1216,7 +1195,6 @@ export default function Dashboard() {
                   key={r.id}
                   r={r}
                   portfolioTotal={bk.total}
-                  edit={edit}
                   canEdit={canEdit(tab)}
                   canCall={canCall}
                   editing={openCall === r.id}
@@ -1257,12 +1235,12 @@ export default function Dashboard() {
       {modal?.type === "research" && <Modal title={`ניתוח ${modal.ticker}`} onClose={() => setModal(null)}><Research ticker={modal.ticker} price={quotes[modal.ticker]?.price} entry={research[modal.ticker]} onRun={() => runResearch(modal.ticker)} onClose={() => setModal(null)} /></Modal>}
       {me === "mark" && (
         <nav className="nav">
-          <button data-on={isOverview ? 1 : 0} onClick={() => { setTab("overview"); setEdit(false); }}>
+          <button data-on={isOverview ? 1 : 0} onClick={() => { setTab("overview"); }}>
             <LayoutGrid size={19} />
             סקירה
           </button>
           {OWNERS.map((o) => (
-            <button key={o.id} data-on={tab === o.id ? 1 : 0} onClick={() => { setTab(o.id); setEdit(false); }}>
+            <button key={o.id} data-on={tab === o.id ? 1 : 0} onClick={() => { setTab(o.id); }}>
               <Wallet size={19} />
               {o.label}
             </button>
