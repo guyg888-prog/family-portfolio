@@ -91,20 +91,45 @@ function Kpi({ label, value, delta, foot }) {
   );
 }
 
-function Donut({ slices, centerValue, centerLabel }) {
+function PortfolioSummary({ book, isOverview }) {
+  const purchaseChange = book.held - book.basis;
+  const purchasePct = book.basis ? (purchaseChange / book.basis) * 100 : 0;
+  const change = (label, amount, percent) => (
+    <div className="summary-change">
+      <div className="summary-change-label">{label}</div>
+      <div className={"summary-change-amount " + tone(amount)} dir="ltr">
+        {amount > 0 ? "+" : amount < 0 ? "−" : ""}{usd(Math.abs(amount), 2)}
+        <span className="summary-change-percent">({pct(percent)})</span>
+      </div>
+    </div>
+  );
+  return (
+    <section className="portfolio-summary" aria-label="סיכום מצב התיק">
+      <div className="summary-title">{isOverview ? "שווי התיקים הכולל" : "מצב החשבון שלי"}</div>
+      <div className="summary-total" dir="ltr">{usd(book.total, 0)}</div>
+      <div className="summary-changes">
+        {change("שינוי יומי", book.day, book.dayPct)}
+        {change("שינוי ממועד הקנייה", purchaseChange, purchasePct)}
+      </div>
+      <div className="summary-cash">פנוי להשקעה <strong dir="ltr">{usd(book.cash, 0)}</strong></div>
+    </section>
+  );
+}
+
+function Donut({ slices, centerValue, centerLabel, expanded = false }) {
   const total = slices.reduce((s, x) => s + x.value, 0);
   if (!total)
     return <div className="hint">אין עדיין אחזקות להצגה.</div>;
   return (
-    <div className="donutwrap">
+    <div className={"donutwrap" + (expanded ? " donutwrap-expanded" : "")}>
       <div className="donut">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={slices}
               dataKey="value"
-              innerRadius={52}
-              outerRadius={74}
+              innerRadius={expanded ? 82 : 52}
+              outerRadius={expanded ? 112 : 74}
               paddingAngle={2}
               stroke="none"
               isAnimationActive={false}
@@ -588,7 +613,7 @@ function PositionCard(props) {
         />
       )}
 
-      {edit && canEdit && !editing && !adjusting && (
+      {canEdit && !editing && !adjusting && (
         <div style={{ marginTop: 10, display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
           <span style={{ display: "flex", gap: 8 }}>
             <button className="btn sm" onClick={() => props.onOpenAdjust(r.id)}>
@@ -613,7 +638,7 @@ function PositionCard(props) {
         </div>
       )}
 
-      {edit && canEdit && adjusting && (
+      {canEdit && adjusting && (
         <PositionEditor
           row={r}
           onBuy={(q, p) => props.onBuy(r.owner, r.id, q, p)}
@@ -623,7 +648,7 @@ function PositionCard(props) {
         />
       )}
 
-      {edit && canCall && editing && (
+      {canCall && editing && (
         <CallEditor
           init={r.call}
           onSave={(a, n) => props.onSaveCall(r.owner, r.id, a, n)}
@@ -1034,21 +1059,7 @@ export default function Dashboard() {
       <div className="page">
         {err && <div className="banner bad">{err}</div>}
 
-        <div className="kpis">
-          <Kpi
-            label={isOverview ? "שווי כולל" : "שווי התיק"}
-            value={usd(bk.total, 0)}
-            delta={bk.hasDeposits ? bk.profitPct : null}
-            foot={bk.hasDeposits ? "מול ההפקדות" : "הזינו הפקדות לתשואה מלאה"}
-          />
-          <Kpi label="רווח והפסד" value={usd(bk.profit, 0)} foot={bk.hasDeposits ? "כולל מימושים" : "על פוזיציות פתוחות"} />
-          <Kpi
-            label="פנוי להשקעה"
-            value={usd(bk.cash, 0)}
-            foot={bk.manual ? "הוזן ידנית" : "הופקד פחות ההשקעות"}
-          />
-          <Kpi label="תנועת היום" value={usd(bk.day, 0)} delta={bk.dayPct} />
-        </div>
+        <PortfolioSummary book={bk} isOverview={isOverview} />
 
         {!bk.hasDeposits && (
           <div className="banner">
@@ -1086,6 +1097,7 @@ export default function Dashboard() {
             slices={holdingSlices}
             centerValue={String(holdingSlices.length)}
             centerLabel="פוזיציות"
+            expanded
           />
         </div>
 
@@ -1131,7 +1143,7 @@ export default function Dashboard() {
                 <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 6 }}>התיק ריק</div>
                 <div className="hint">
                   {canEdit(tab)
-                    ? "לחצו על העיפרון למעלה והוסיפו את המניה הראשונה."
+                    ? "לחצו על כפתור העריכה למעלה כדי להוסיף את המניה הראשונה."
                     : "אין כאן עדיין פוזיציות."}
                 </div>
               </div>
