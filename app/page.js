@@ -673,7 +673,7 @@ function PositionCard(props) {
 
       {!editing && !adjusting && (
         <div className="stock-actions">
-          <button className="btn sm stock-analysis-btn" onClick={() => research ? props.onCloseResearch(r.ticker) : props.onResearch(r.ticker)}><Sparkles size={15} /> ניתוח מניה</button>
+          <button className="btn sm stock-analysis-btn" onClick={() => props.onResearch(r.ticker)}><Sparkles size={15} /> ניתוח מניה</button>
           {canEdit && <button className="btn sm" onClick={() => props.onOpenAdjust(r.id)}>עריכת מניה</button>}
           {canEdit && canCall && (
             <button className="btn sm" onClick={() => props.onOpenCall(r.id)}>
@@ -1184,15 +1184,6 @@ export default function Dashboard() {
 
         {!isOverview && (
           <>
-            {false && edit && canEdit(tab) && (
-              <AddPosition
-                draft={draft}
-                setDraft={setDraft}
-                onAdd={() => addPosition(tab)}
-                ownerHe={me === "mark" ? ownerOf(tab).he : ""}
-              />
-            )}
-
             {(byOwner[tab]?.rows || []).length === 0 ? (
               <div className="empty">
                 <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 6 }}>התיק ריק</div>
