@@ -29,6 +29,8 @@ import {
   TrendingDown,
   Coins,
   Activity,
+  CircleCheck,
+  AlertTriangle,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -607,8 +609,9 @@ function PositionEditor({ row, onBuy, onSell, onFix, onCancel }) {
 
 const STOCK_RANGES = [["1D","יום"],["1W","שבוע"],["1M","חודש"],["3M","3 חודשים"],["1Y","שנה"],["5Y","5 שנים"]];
 function StockLogo({ticker}) {
- const [failed,setFailed] = useState(false);
- return <div className="stock-logo">{!failed && <img src={`https://financialmodelingprep.com/image-stock/${encodeURIComponent(ticker)}.png`} alt="" onError={()=>setFailed(true)} loading="lazy" />}<span>{ticker.slice(0,2)}</span></div>;
+ const [source,setSource] = useState(0);
+ const images = ticker.toUpperCase() === "ONON" ? ["https://logo.clearbit.com/on-running.com", "https://financialmodelingprep.com/image-stock/ONON.png"] : [`https://financialmodelingprep.com/image-stock/${encodeURIComponent(ticker)}.png`];
+ return <div className="stock-logo">{source < images.length && <img key={source} src={images[source]} alt="" onError={()=>setSource(i=>i+1)} loading="lazy" />}<span>{ticker.slice(0,2)}</span></div>;
 }
 function StockHistory({ticker}) {
  const [range,setRange]=useState("1M");
@@ -687,16 +690,7 @@ function PositionCard(props) {
               {r.call ? "עריכת הוראה" : "הוראה"}
             </button>
           )}
-          {canEdit && (confirming ? (
-            <>
-              <button className="btn sm dg" onClick={() => props.onDelete(r.owner, r.id)}>לאשר מחיקה</button>
-              <button className="btn sm" onClick={props.onCancelDelete}>ביטול</button>
-            </>
-          ) : (
-            <button className="btn sm dg" onClick={() => props.onAskDelete(r.id)} aria-label="מחיקה">
-              <Trash2 size={15} />
-            </button>
-          ))}
+          {canEdit && <button className="btn sm dg" onClick={() => props.onAskDelete(r.id)} aria-label={`מחיקת ${r.ticker}`}><Trash2 size={15} /></button>}
         </div>
       )}
 
@@ -763,6 +757,16 @@ export default function Dashboard() {
   const [adjust, setAdjust] = useState(null);
   const [research, setResearch] = useState({});
   const [modal, setModal] = useState(null);
+  const [toast, setToast] = useState(null);
+  const toastTimer = useRef(null);
+  const refreshBusy = useRef(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const notify = useCallback((message, kind = "success") => {
+    clearTimeout(toastTimer.current);
+    setToast({ message, kind });
+    toastTimer.current = setTimeout(() => setToast(null), 3400);
+  }, []);
+  useEffect(() => () => { clearTimeout(toastTimer.current); }, []);
   const timer = useRef(null);
 
   /* ---- identity ---- */
@@ -799,10 +803,10 @@ export default function Dashboard() {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ me, data: next }),
-        }).catch(() => setErr("השינוי לא נשמר."));
+        }).then((res) => { if (!res.ok) throw new Error("save failed"); notify("השינויים נשמרו בהצלחה"); }).catch(() => { setErr("השינוי לא נשמר."); notify("לא הצלחנו לשמור את השינוי", "error"); });
       }, 600);
     },
-    [me]
+    [me, notify]
   );
 
   /* ---- visibility ---- */
@@ -818,7 +822,8 @@ export default function Dashboard() {
   }, [data, visible]);
 
   const refresh = useCallback(async () => {
-    if (!tickers.length) return;
+    if (!tickers.length || refreshBusy.current) return;
+    refreshBusy.current = true;
     setLoading(true);
     setErr(null);
     try {
@@ -830,7 +835,9 @@ export default function Dashboard() {
       if (!res.ok) throw new Error();
       const q = await res.json();
       setQuotes((p) => ({ ...p, ...q }));
-      setStamp(new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }));
+      const now = new Date();
+      setStamp(now.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }));
+      setLastUpdated(now);
 
       const point = { d: isoDay() };
       visible.forEach((o) => {
@@ -848,9 +855,16 @@ export default function Dashboard() {
     } catch (e) {
       setErr("לא הצלחתי למשוך מחירים כרגע.");
     } finally {
+      refreshBusy.current = false;
       setLoading(false);
     }
   }, [tickers, data, visible, me]);
+
+  useEffect(() => {
+    if (!me || !tickers.length) return;
+    const id = setInterval(() => { if (document.visibilityState === "visible") refresh(); }, 60000);
+    return () => clearInterval(id);
+  }, [me, tickers.length, refresh]);
 
   useEffect(() => {
     if (me && tickers.length && !stamp) refresh();
@@ -1026,6 +1040,7 @@ export default function Dashboard() {
 
   const deletePosition = (owner, id) => {
     setConfirmDel(null);
+    setModal(null);
     persist({
       ...data,
       positions: { ...data.positions, [owner]: data.positions[owner].filter((p) => p.id !== id) },
@@ -1099,6 +1114,7 @@ export default function Dashboard() {
         </div>
         <div className="headbtns">
           {editableOwners.length > 0 && <button className="btn pri header-add" onClick={() => setModal({ type: "add", owner: isOverview ? editableOwners[0].id : tab })}><Plus size={17} /> <span>הוספת פוזיציה</span></button>}
+          <span className="refresh-status" title="המחירים מתרעננים אוטומטית בכל דקה">{loading ? "מעדכן…" : lastUpdated ? `עודכן ב-${lastUpdated.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}` : "ממתין לעדכון"}<small>רענון אוטומטי · כל דקה</small></span>
           <button className="icb" onClick={refresh} disabled={loading} aria-label="רענון">
             <RefreshCw size={18} className={loading ? "spin" : ""} />
           </button>
@@ -1221,7 +1237,7 @@ export default function Dashboard() {
                   onFix={fixPosition}
                   onSaveCall={saveCall}
                   onCancelCall={() => setOpenCall(null)}
-                  onAskDelete={setConfirmDel}
+                  onAskDelete={(id) => setModal({ type: "delete", row: r })}
                   onCancelDelete={() => setConfirmDel(null)}
                   onDelete={deletePosition}
                   onResearch={(ticker) => { setModal({ type: "research", ticker }); runResearch(ticker); }}
@@ -1239,6 +1255,8 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {toast && <div className={"app-toast " + (toast.kind === "error" ? "app-toast-error" : "")} role="status">{toast.kind === "error" ? <AlertTriangle size={19} /> : <CircleCheck size={19} />}<span>{toast.message}</span><button onClick={() => setToast(null)} aria-label="סגירה"><X size={15} /></button></div>}
+      {modal?.type === "delete" && <Modal title={`מחיקת ${modal.row.ticker}`} onClose={() => setModal(null)}><div className="delete-dialog"><div className="delete-dialog-icon"><Trash2 size={24} /></div><p>למחוק את הפוזיציה <strong dir="ltr">{modal.row.ticker}</strong> מהתיק?</p><span>הפעולה תסיר את המניה מהתיק ולא ניתן לבטל אותה.</span><div className="delete-dialog-actions"><button className="btn" onClick={() => setModal(null)}>ביטול</button><button className="btn dg" onClick={() => deletePosition(modal.row.owner, modal.row.id)}><Trash2 size={16} /> מחיקת פוזיציה</button></div></div></Modal>}
       {modal?.type === "cash" && <Modal title="עריכת מזומן פנוי להשקעה" onClose={() => setModal(null)}><MoneyEditor data={data} owners={isOverview ? editableOwners : [ownerOf(tab)]} books={byOwner} onChange={changeMoney} /></Modal>}
       {modal?.type === "add" && <Modal title="הוספת פוזיציה" onClose={() => setModal(null)}><div className="modal-owner">{editableOwners.length > 1 && <select className="inp" value={modal.owner} onChange={e => setModal({ ...modal, owner: e.target.value })}>{editableOwners.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}</select>}</div><AddPosition draft={draft} setDraft={setDraft} onAdd={() => addPosition(modal.owner)} /></Modal>}
       {modal?.type === "edit" && <Modal title={`עריכת ${modal.row.ticker}`} onClose={() => setModal(null)}><PositionEditor row={modal.row} onBuy={(q,p) => buyMore(modal.row.owner,modal.row.id,q,p)} onSell={(q,p) => sellSome(modal.row.owner,modal.row.id,q,p)} onFix={(q,c) => { fixPosition(modal.row.owner,modal.row.id,q,c); setModal(null); }} onCancel={() => setModal(null)} /></Modal>}
