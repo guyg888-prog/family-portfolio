@@ -126,9 +126,9 @@ function CashTile({ cash, onEdit }) {
   return <aside className="cash-tile">
     <div className="cash-tile-top">
       <div className="cash-tile-icon"><Coins size={22} /></div>
-      {onEdit && <button type="button" className="cash-edit" onClick={onEdit} aria-label="עריכת מזומן פנוי להשקעה"><Pencil size={15} /> עריכה</button>}
+
     </div>
-    <div className="cash-tile-content"><span>מזומן פנוי להשקעה</span><strong dir="ltr">{usd(cash, 0)}</strong><small>יתרה זמינה בחשבון</small></div>
+    <div className="cash-tile-content"><div className="cash-tile-title"><span>מזומן פנוי להשקעה</span>{onEdit && <button type="button" className="cash-edit" onClick={onEdit} aria-label="עריכת מזומן פנוי להשקעה" title="עריכת מזומן פנוי להשקעה"><Pencil size={15} /></button>}</div><strong dir="ltr">{usd(cash, 0)}</strong><small>יתרה זמינה בחשבון</small></div>
   </aside>;
 }
 
@@ -445,9 +445,7 @@ function Research({ ticker, price, entry, onRun, onClose }) {
     <div className="rs">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <span className="hint">{d.company || ticker} · נבדק {entry.at}</span>
-        <button className="icb" style={{ width: 32, height: 32, borderRadius: 10 }} onClick={onClose} aria-label="סגירה">
-          <X size={14} />
-        </button>
+        
       </div>
       <div className="rsg">
         <div className="rsi">
