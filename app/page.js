@@ -28,6 +28,7 @@ import {
   TrendingUp,
   TrendingDown,
   Coins,
+  Activity,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -99,7 +100,7 @@ function PortfolioSummary({ book, isOverview }) {
   const purchasePct = book.basis ? (purchaseChange / book.basis) * 100 : 0;
   const change = (label, amount, percent) => (
     <div className="summary-change">
-      <div className="summary-change-label">{label}</div>
+      <div className="summary-change-label">{amount > 0 ? <TrendingUp size={17} /> : amount < 0 ? <TrendingDown size={17} /> : <Activity size={17} />}{label}</div>
       <div className={"summary-change-amount " + tone(amount)} dir="ltr">
         {amount > 0 ? "+" : amount < 0 ? "−" : ""}{usd(Math.abs(amount), 2)}
         <span className="summary-change-percent">({pct(percent)})</span>
@@ -119,8 +120,14 @@ function PortfolioSummary({ book, isOverview }) {
   );
 }
 
-function CashTile({ cash }) {
-  return <aside className="cash-tile"><div className="cash-tile-icon"><Coins size={22} /></div><div><span>פנוי להשקעה</span><strong dir="ltr">{usd(cash, 0)}</strong><small>יתרה זמינה בחשבון</small></div></aside>;
+function CashTile({ cash, onEdit }) {
+  return <aside className="cash-tile">
+    <div className="cash-tile-top">
+      <div className="cash-tile-icon"><Coins size={22} /></div>
+      {onEdit && <button type="button" className="cash-edit" onClick={onEdit} aria-label="עריכת מזומן פנוי להשקעה"><Pencil size={15} /> עריכה</button>}
+    </div>
+    <div className="cash-tile-content"><span>מזומן פנוי להשקעה</span><strong dir="ltr">{usd(cash, 0)}</strong><small>יתרה זמינה בחשבון</small></div>
+  </aside>;
 }
 
 function Modal({ title, onClose, children }) {
@@ -145,8 +152,8 @@ function Donut({ slices, centerValue, centerLabel, expanded = false }) {
             <Pie
               data={slices}
               dataKey="value"
-              innerRadius={expanded ? 82 : 52}
-              outerRadius={expanded ? 112 : 74}
+              innerRadius={expanded ? "53%" : 52}
+              outerRadius={expanded ? "76%" : 74}
               paddingAngle={2}
               stroke="none"
               isAnimationActive={false}
@@ -651,13 +658,13 @@ function PositionCard(props) {
 
       <div className="stock-performance">
         <div>
-          <span>שינוי יומי</span>
+          <span className="stock-change-label">{dayMoney > 0 ? <TrendingUp size={16} /> : dayMoney < 0 ? <TrendingDown size={16} /> : <Activity size={16} />} שינוי יומי</span>
           <strong className={tone(dayMoney)} dir="ltr">
             {dayMoney === null ? "—" : <>{dayMoney > 0 ? "+" : ""}{usd(dayMoney)}<span className="stock-pct">{pct(r.day)}</span></>}
           </strong>
         </div>
         <div>
-          <span>שינוי ממועד הקנייה</span>
+          <span className="stock-change-label">{r.pl > 0 ? <TrendingUp size={16} /> : r.pl < 0 ? <TrendingDown size={16} /> : <Activity size={16} />} שינוי ממועד הקנייה</span>
           <strong className={tone(r.pl)} dir="ltr">
             {r.pl === null ? "—" : <>{r.pl > 0 ? "+" : ""}{usd(r.pl)}<span className="stock-pct">{pct(r.plPct)}</span></>}
           </strong>
@@ -674,7 +681,7 @@ function PositionCard(props) {
       {!editing && !adjusting && (
         <div className="stock-actions">
           <button className="btn sm stock-analysis-btn" onClick={() => props.onResearch(r.ticker)}><Sparkles size={15} /> ניתוח מניה</button>
-          {canEdit && <button className="btn sm" onClick={() => props.onOpenAdjust(r.id)}>עריכת מניה</button>}
+          {canEdit && <button className="btn sm" onClick={() => props.onOpenAdjust(r.id)}><Pencil size={14} /> עריכת מניה</button>}
           {canEdit && canCall && (
             <button className="btn sm" onClick={() => props.onOpenCall(r.id)}>
               {r.call ? "עריכת הוראה" : "הוראה"}
@@ -1114,7 +1121,7 @@ export default function Dashboard() {
       <div className="page">
         {err && <div className="banner bad">{err}</div>}
 
-        <div className="summary-layout"><PortfolioSummary book={bk} isOverview={isOverview} /><CashTile cash={bk.cash} /></div>
+        <div className="summary-layout"><PortfolioSummary book={bk} isOverview={isOverview} /><CashTile cash={bk.cash} onEdit={editableOwners.length ? () => setModal({ type: "cash" }) : null} /></div>
 
         {!bk.hasDeposits && (
           <div className="banner">
@@ -1232,6 +1239,7 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {modal?.type === "cash" && <Modal title="עריכת מזומן פנוי להשקעה" onClose={() => setModal(null)}><MoneyEditor data={data} owners={isOverview ? editableOwners : [ownerOf(tab)]} books={byOwner} onChange={changeMoney} /></Modal>}
       {modal?.type === "add" && <Modal title="הוספת פוזיציה" onClose={() => setModal(null)}><div className="modal-owner">{editableOwners.length > 1 && <select className="inp" value={modal.owner} onChange={e => setModal({ ...modal, owner: e.target.value })}>{editableOwners.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}</select>}</div><AddPosition draft={draft} setDraft={setDraft} onAdd={() => addPosition(modal.owner)} /></Modal>}
       {modal?.type === "edit" && <Modal title={`עריכת ${modal.row.ticker}`} onClose={() => setModal(null)}><PositionEditor row={modal.row} onBuy={(q,p) => buyMore(modal.row.owner,modal.row.id,q,p)} onSell={(q,p) => sellSome(modal.row.owner,modal.row.id,q,p)} onFix={(q,c) => { fixPosition(modal.row.owner,modal.row.id,q,c); setModal(null); }} onCancel={() => setModal(null)} /></Modal>}
       {modal?.type === "research" && <Modal title={`ניתוח ${modal.ticker}`} onClose={() => setModal(null)}><Research ticker={modal.ticker} price={quotes[modal.ticker]?.price} entry={research[modal.ticker]} onRun={() => runResearch(modal.ticker)} onClose={() => setModal(null)} /></Modal>}
