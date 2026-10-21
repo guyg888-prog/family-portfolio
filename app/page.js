@@ -635,13 +635,13 @@ function PositionCard(props) {
         <div>
           <span>שינוי יומי</span>
           <strong className={tone(dayMoney)} dir="ltr">
-            {dayMoney === null ? "—" : `${dayMoney > 0 ? "+" : ""}${usd(dayMoney)} · ${pct(r.day)}`}
+            {dayMoney === null ? "—" : <>{dayMoney > 0 ? "+" : ""}{usd(dayMoney)}<span className="stock-pct">{pct(r.day)}</span></>}
           </strong>
         </div>
         <div>
           <span>שינוי ממועד הקנייה</span>
           <strong className={tone(r.pl)} dir="ltr">
-            {r.pl === null ? "—" : `${r.pl > 0 ? "+" : ""}${usd(r.pl)} · ${pct(r.plPct)}`}
+            {r.pl === null ? "—" : <>{r.pl > 0 ? "+" : ""}{usd(r.pl)}<span className="stock-pct">{pct(r.plPct)}</span></>}
           </strong>
         </div>
       </div>
