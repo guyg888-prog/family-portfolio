@@ -520,3 +520,6 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 /* Highlight the stock identity and current price without adding visual weight */
 .stock-card .stock-card-head { background: #f5f7fc; border-bottom: 1px solid #e0e6f1; border-radius: 13px 13px 0 0; margin: -16px -16px 12px; padding: 16px 16px 14px; }
 @media (max-width: 600px) { .stock-card .stock-card-head { padding: 14px 16px 12px; } }
+
+/* Distinct, lightly blue-tinted stock header that contrasts with the page canvas */
+.stock-card .stock-card-head { background: #eaf1ff; border-bottom: 1px solid #c9d9f5; box-shadow: inset 0 -1px 0 rgba(59,111,224,.06); }
