@@ -138,6 +138,11 @@ function Donut({ slices, centerValue, centerLabel, expanded = false }) {
                 <Cell key={i} fill={s.color} />
               ))}
             </Pie>
+            <Tooltip formatter={(value, name, item) => [usd(value), item?.payload?.name || name]} content={({ active, payload }) => {
+              if (!active || !payload?.length) return null;
+              const item = payload[0].payload;
+              return <div className="donut-tooltip"><strong>{item.name}</strong><span dir="ltr">{usd(item.value)} · {((item.value / total) * 100).toFixed(1)}%</span></div>;
+            }} />
           </PieChart>
         </ResponsiveContainer>
         <div className="donutmid">
@@ -609,10 +614,10 @@ function PositionCard(props) {
         <StockLogo ticker={r.ticker} />
         <div className="stock-identity">
           <div className="stock-ticker" dir="ltr">{r.ticker}</div>
-          <div className="stock-name">מחיר מניה</div>
+
         </div>
         <div className="stock-price">
-          <strong dir="ltr">{r.price === null ? "—" : usd(r.price)}</strong>
+          <div className="stock-price-line"><span>מחיר מניה</span><strong dir="ltr">{r.price === null ? "—" : usd(r.price)}</strong></div>
           <span className={tone(r.day)} dir="ltr">{r.day === null ? "—" : pct(r.day)}</span>
         </div>
       </div>
@@ -649,20 +654,15 @@ function PositionCard(props) {
       )}
 
       {!editing && !adjusting && (
-        <Research ticker={r.ticker} price={r.price} entry={research}
-          onRun={() => props.onResearch(r.ticker)}
-          onClose={() => props.onCloseResearch(r.ticker)} />
-      )}
-
-      {canEdit && !editing && !adjusting && (
         <div className="stock-actions">
-          <button className="btn sm" onClick={() => props.onOpenAdjust(r.id)}>עריכת מניה</button>
-          {canCall && (
+          <button className="btn sm stock-analysis-btn" onClick={() => research ? props.onCloseResearch(r.ticker) : props.onResearch(r.ticker)}><Sparkles size={15} /> ניתוח מניה</button>
+          {canEdit && <button className="btn sm" onClick={() => props.onOpenAdjust(r.id)}>עריכת מניה</button>}
+          {canEdit && canCall && (
             <button className="btn sm" onClick={() => props.onOpenCall(r.id)}>
               {r.call ? "עריכת הוראה" : "הוראה"}
             </button>
           )}
-          {confirming ? (
+          {canEdit && (confirming ? (
             <>
               <button className="btn sm dg" onClick={() => props.onDelete(r.owner, r.id)}>לאשר מחיקה</button>
               <button className="btn sm" onClick={props.onCancelDelete}>ביטול</button>
@@ -671,8 +671,13 @@ function PositionCard(props) {
             <button className="btn sm dg" onClick={() => props.onAskDelete(r.id)} aria-label="מחיקה">
               <Trash2 size={15} />
             </button>
-          )}
+          ))}
         </div>
+      )}
+      {!editing && !adjusting && research && (
+        <Research ticker={r.ticker} price={r.price} entry={research}
+          onRun={() => props.onResearch(r.ticker)}
+          onClose={() => props.onCloseResearch(r.ticker)} />
       )}
       {canEdit && adjusting && (
         <PositionEditor row={r}
