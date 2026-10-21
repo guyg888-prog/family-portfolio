@@ -1207,6 +1207,7 @@ export default function Dashboard() {
 
         {!isOverview && (
           <>
+            <h2 className="investments-heading">ההשקעות שלי</h2>
             {(byOwner[tab]?.rows || []).length === 0 ? (
               <div className="empty">
                 <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 6 }}>התיק ריק</div>
