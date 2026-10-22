@@ -523,3 +523,8 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 
 /* Distinct, lightly blue-tinted stock header that contrasts with the page canvas */
 .stock-card .stock-card-head { background: #eaf1ff; border-bottom: 1px solid #c9d9f5; box-shadow: inset 0 -1px 0 rgba(59,111,224,.06); }
+
+/* Give the refresh timestamp more space at the right edge in RTL layouts. */
+@media (min-width: 701px) {
+  .refresh-chip { padding-inline-start: 26px; padding-inline-end: 7px; gap: 14px; }
+}
