@@ -797,6 +797,13 @@ export default function Dashboard() {
   const [quotes, setQuotes] = useState({});
   const [me, setMe] = useState(null);
   const [tab, setTab] = useState(null);
+  const [headerScrolled, setHeaderScrolled] = useState(false);
+  useEffect(() => {
+    const updateHeader = () => setHeaderScrolled(window.scrollY > 2);
+    updateHeader();
+    window.addEventListener("scroll", updateHeader, { passive: true });
+    return () => window.removeEventListener("scroll", updateHeader);
+  }, []);
   const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState(null);
@@ -1151,7 +1158,7 @@ export default function Dashboard() {
 
   return (
     <div className="shell">
-      <div className="head">
+      <div className={`head${headerScrolled ? " head-scrolled" : ""}`}>
         <div>
           <div className="hello"><OwnerAvatar owner={ownerOf(me)} size="small" /> שלום, {ownerOf(me).he}</div>
           <div className="date">

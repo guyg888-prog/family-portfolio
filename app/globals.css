@@ -659,3 +659,7 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
   .investments-section { margin-top: 14px; }
   .investments-section .investments-heading { margin-bottom: 15px; }
 }
+
+/* Show sticky header divider only once page scrolls */
+.head { border-bottom-color: transparent; }
+.head.head-scrolled { border-bottom-color: var(--line); }
