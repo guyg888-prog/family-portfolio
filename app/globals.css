@@ -573,3 +573,6 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 .owner-avatar-small { width: 36px; height: 36px; font-size: 13px; }
 .owner-avatar-large { width: 54px; height: 54px; font-size: 19px; }
 .owner-avatar-normal { width: 42px; height: 42px; font-size: 16px; }
+
+/* Square logo containers, with no rounded corners */
+.stock-logo, .stock-logo img { border-radius: 0; }
