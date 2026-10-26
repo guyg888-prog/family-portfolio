@@ -534,3 +534,6 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 .stock-performance strong .stock-money { display: block; margin-top: 5px; font-size: 14px; font-weight: 650; line-height: 1.35; color: inherit; }
 .summary-change-amount .summary-change-percent { display: block; font-size: clamp(22px, 2.3vw, 30px); font-weight: 800; line-height: 1.2; color: inherit; margin: 0; }
 .summary-change-amount .summary-change-money { display: block; margin-top: 5px; font-size: 15px; font-weight: 650; line-height: 1.4; color: inherit; }
+
+/* A little more vertical breathing room between investment rows */
+.stock-grid { row-gap: 22px; }
