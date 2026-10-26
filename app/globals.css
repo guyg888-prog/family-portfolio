@@ -552,3 +552,24 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 .stock-logo > svg { flex: none; }
 .headbtns .header-add.btn.pri { background: #dceaff; border: 1px solid #b9d1f6; color: #183d79; box-shadow: none; }
 .headbtns .header-add.btn.pri:hover { background: #cbdfff; border-color: #9dbef0; box-shadow: 0 5px 15px rgba(59,111,224,.11); }
+
+/* Uniform avatar sizing and subtle outline across all three users */
+.owner-avatar {
+  box-sizing: border-box;
+  aspect-ratio: 1 / 1;
+  border: 2px solid #fff;
+  outline: 1px solid #d7e1f0;
+  box-shadow: 0 2px 7px rgba(20, 42, 85, .10);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.owner-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 50%;
+}
+.owner-avatar-small { width: 36px; height: 36px; font-size: 13px; }
+.owner-avatar-large { width: 54px; height: 54px; font-size: 19px; }
+.owner-avatar-normal { width: 42px; height: 42px; font-size: 16px; }
