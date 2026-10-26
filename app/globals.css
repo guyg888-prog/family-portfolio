@@ -635,3 +635,27 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
   .portfolio-summary .summary-changes { gap: 11px; margin-top: 18px; }
   .portfolio-summary .summary-change { padding: 17px 19px; }
 }
+
+/* Softer, quieter account performance tiles */
+.portfolio-summary .summary-change {
+  background: #f8faff;
+  border: 1px solid #e3eaf6;
+  box-shadow: none;
+}
+.portfolio-summary .summary-change::before { display: none; }
+.portfolio-summary .summary-change-label { color: #61718e; }
+/* One fine, continuous ring around every profile image */
+.owner-avatar {
+  border: 1px solid #d7e0ed;
+  outline: none;
+  box-shadow: 0 2px 6px rgba(20,42,85,.07);
+}
+.owner-avatar img { border-radius: 50%; }
+/* Match the existing chart and allocation section surfaces */
+.investments-section { margin-top: 20px; }
+.investments-section .investments-heading { margin: 0 0 20px; }
+.investments-section .stock-grid { margin-top: 0; }
+@media (max-width: 600px) {
+  .investments-section { margin-top: 14px; }
+  .investments-section .investments-heading { margin-bottom: 15px; }
+}
