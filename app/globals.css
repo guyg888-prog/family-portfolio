@@ -576,3 +576,29 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 
 /* Square logo containers, with no rounded corners */
 .stock-logo, .stock-logo img { border-radius: 0; }
+
+/* Netflix-inspired family profile picker */
+.gatebox { max-width: 720px; text-align: center; }
+.profile-picker { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(12px, 3vw, 26px); align-items: start; margin: 28px auto 24px; }
+.profile-picker .profile-pick {
+  width: 100%; min-height: 200px; margin: 0; padding: 23px 12px 19px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px; text-align: center; border: 1px solid #dfe7f4;
+  background: #fff; border-radius: 18px; box-shadow: 0 5px 20px rgba(23,43,86,.055);
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.profile-picker .profile-pick:hover { transform: translateY(-4px); border-color: #a9c5ef; box-shadow: 0 12px 30px rgba(34,73,141,.13); }
+.profile-picker .profile-pick:focus-visible { outline: 3px solid #80aaf0; outline-offset: 3px; }
+.profile-picker .owner-avatar-large { width: 98px; height: 98px; font-size: 30px; }
+.profile-picker .profile-pick .grow { flex: none; width: 100%; }
+.profile-picker .profile-pick .t1 { font-size: 17px; font-weight: 800; }
+.profile-picker .profile-pick .t2 { margin-top: 5px; font-size: 12px; }
+@media (max-width: 520px) {
+ .gatebox { max-width: 100%; }
+ .profile-picker { gap: 9px; }
+ .profile-picker .profile-pick { min-height: 150px; padding: 18px 5px 14px; gap: 12px; border-radius: 14px; }
+ .profile-picker .owner-avatar-large { width: clamp(65px, 19vw, 88px); height: clamp(65px, 19vw, 88px); }
+ .profile-picker .profile-pick .t1 { font-size: 14px; }
+ .profile-picker .profile-pick .t2 { font-size: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .profile-picker .profile-pick { transition: none; } }
