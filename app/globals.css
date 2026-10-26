@@ -546,3 +546,9 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 .hello { display: flex; align-items: center; gap: 9px; }
 .nav .owner-avatar { margin-inline-end: 3px; }
 .pick .owner-avatar { flex-shrink: 0; }
+
+/* Consistent stock identity placeholder and softer add-position CTA */
+.stock-logo { background: #edf3ff; color: #5279bc; }
+.stock-logo > svg { flex: none; }
+.headbtns .header-add.btn.pri { background: #dceaff; border: 1px solid #b9d1f6; color: #183d79; box-shadow: none; }
+.headbtns .header-add.btn.pri:hover { background: #cbdfff; border-color: #9dbef0; box-shadow: 0 5px 15px rgba(59,111,224,.11); }
