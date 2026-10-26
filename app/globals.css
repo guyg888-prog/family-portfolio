@@ -602,3 +602,14 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
  .profile-picker .profile-pick .t2 { font-size: 10px; }
 }
 @media (prefers-reduced-motion: reduce) { .profile-picker .profile-pick { transition: none; } }
+
+/* Two highlighted performance KPI tiles in account summary */
+.portfolio-summary .summary-changes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.portfolio-summary .summary-change { padding: 18px 20px; border: 1px solid #d6e3f7; border-radius: 16px; background: #eef4ff; box-shadow: 0 2px 8px rgba(28,66,125,.045); }
+.portfolio-summary .summary-change-label { margin-bottom: 13px; font-weight: 650; color: #53678d; }
+.portfolio-summary .summary-change-amount .summary-change-percent { font-size: clamp(25px, 2.6vw, 34px); }
+.portfolio-summary .summary-change-amount .summary-change-money { margin-top: 6px; font-size: 15px; }
+@media (max-width: 600px) { .portfolio-summary .summary-changes { grid-template-columns: 1fr; gap: 10px; } .portfolio-summary .summary-change { padding: 15px 17px; } }
+/* Thin single avatar stroke and smooth cover scaling */
+.owner-avatar { border: 1px solid rgba(255,255,255,.92); outline: none; box-shadow: 0 0 0 1px rgba(108,135,183,.28), 0 2px 6px rgba(20,42,85,.08); }
+.owner-avatar img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; image-rendering: auto; }
