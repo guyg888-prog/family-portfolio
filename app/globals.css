@@ -613,3 +613,25 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 /* Thin single avatar stroke and smooth cover scaling */
 .owner-avatar { border: 1px solid rgba(255,255,255,.92); outline: none; box-shadow: 0 0 0 1px rgba(108,135,183,.28), 0 2px 6px rgba(20,42,85,.08); }
 .owner-avatar img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; image-rendering: auto; }
+
+/* Distinct performance panels inside "My Account" */
+.portfolio-summary .summary-changes { margin-top: 22px; gap: 16px; }
+.portfolio-summary .summary-change {
+  position: relative; overflow: hidden;
+  padding: 20px 22px 21px;
+  border: 1px solid #c8d9f4;
+  border-radius: 17px;
+  background: linear-gradient(145deg, #e7f0ff 0%, #f5f9ff 100%);
+  box-shadow: 0 5px 16px rgba(32,74,145,.09);
+}
+.portfolio-summary .summary-change::before {
+  content: ""; position: absolute; inset-block: 15px; inset-inline-start: 0;
+  width: 4px; border-radius: 5px 0 0 5px; background: #6b97e9;
+}
+.portfolio-summary .summary-change-label { font-size: 14px; font-weight: 750; margin-bottom: 15px; color: #385783; }
+.portfolio-summary .summary-change-amount .summary-change-percent { font-size: clamp(27px, 2.8vw, 36px); }
+.portfolio-summary .summary-change-amount .summary-change-money { font-size: 15px; margin-top: 7px; }
+@media (max-width: 600px) {
+  .portfolio-summary .summary-changes { gap: 11px; margin-top: 18px; }
+  .portfolio-summary .summary-change { padding: 17px 19px; }
+}
