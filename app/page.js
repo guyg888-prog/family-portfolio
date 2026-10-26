@@ -104,8 +104,8 @@ function PortfolioSummary({ book, isOverview }) {
     <div className="summary-change">
       <div className="summary-change-label">{amount > 0 ? <TrendingUp size={17} /> : amount < 0 ? <TrendingDown size={17} /> : <Activity size={17} />}{label}</div>
       <div className={"summary-change-amount " + tone(amount)} dir="ltr">
-        {amount > 0 ? "+" : amount < 0 ? "−" : ""}{usd(Math.abs(amount), 2)}
-        <span className="summary-change-percent">({pct(percent)})</span>
+        <span className="summary-change-percent">{pct(percent)}</span>
+        <span className="summary-change-money">{amount > 0 ? "+" : amount < 0 ? "−" : ""}{usd(Math.abs(amount), 2)}</span>
       </div>
     </div>
   );
@@ -661,13 +661,13 @@ function PositionCard(props) {
         <div>
           <span className="stock-change-label">{dayMoney > 0 ? <TrendingUp size={16} /> : dayMoney < 0 ? <TrendingDown size={16} /> : <Activity size={16} />} שינוי יומי</span>
           <strong className={tone(dayMoney)} dir="ltr">
-            {dayMoney === null ? "—" : <>{dayMoney > 0 ? "+" : ""}{usd(dayMoney)}<span className="stock-pct">{pct(r.day)}</span></>}
+            {dayMoney === null ? "—" : <><span className="stock-pct">{pct(r.day)}</span><span className="stock-money">{dayMoney > 0 ? "+" : ""}{usd(dayMoney)}</span></>}
           </strong>
         </div>
         <div>
           <span className="stock-change-label">{r.pl > 0 ? <TrendingUp size={16} /> : r.pl < 0 ? <TrendingDown size={16} /> : <Activity size={16} />} שינוי ממועד הקנייה</span>
           <strong className={tone(r.pl)} dir="ltr">
-            {r.pl === null ? "—" : <>{r.pl > 0 ? "+" : ""}{usd(r.pl)}<span className="stock-pct">{pct(r.plPct)}</span></>}
+            {r.pl === null ? "—" : <><span className="stock-pct">{pct(r.plPct)}</span><span className="stock-money">{r.pl > 0 ? "+" : ""}{usd(r.pl)}</span></>}
           </strong>
         </div>
       </div>
