@@ -528,3 +528,9 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 @media (min-width: 701px) {
   .refresh-chip { padding-inline-start: 26px; padding-inline-end: 7px; gap: 14px; }
 }
+
+/* Percent-first hierarchy for daily and since-purchase performance */
+.stock-performance strong .stock-pct { display: block; font-size: 25px; font-weight: 800; margin-top: 0; line-height: 1.2; color: inherit; }
+.stock-performance strong .stock-money { display: block; margin-top: 5px; font-size: 14px; font-weight: 650; line-height: 1.35; color: inherit; }
+.summary-change-amount .summary-change-percent { display: block; font-size: clamp(22px, 2.3vw, 30px); font-weight: 800; line-height: 1.2; color: inherit; margin: 0; }
+.summary-change-amount .summary-change-money { display: block; margin-top: 5px; font-size: 15px; font-weight: 650; line-height: 1.4; color: inherit; }
