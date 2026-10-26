@@ -44,7 +44,7 @@ const OWNERS = [
 
 function OwnerAvatar({ owner, size = "normal" }) {
   return <span className={`owner-avatar owner-avatar-${size}`} style={{ background: owner.color }}>
-    {["ron", "mark"].includes(owner.id) ? <img src={`/avatars/${owner.id}.webp`} alt="" /> : <span>{owner.label[0]}</span>}
+    {["ron", "mark", "guy"].includes(owner.id) ? <img src={`/avatars/${owner.id}.webp`} alt="" /> : <span>{owner.label[0]}</span>}
   </span>;
 }
 
