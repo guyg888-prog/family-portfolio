@@ -31,6 +31,7 @@ import {
   Activity,
   CircleCheck,
   AlertTriangle,
+  ChartNoAxesCombined,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -612,10 +613,54 @@ function PositionEditor({ row, onBuy, onSell, onFix, onCancel }) {
 }
 
 const STOCK_RANGES = [["1D","יום"],["1W","שבוע"],["1M","חודש"],["3M","3 חודשים"],["1Y","שנה"],["5Y","5 שנים"]];
+const STOCK_LOGO_DOMAINS = {
+ AAPL:"apple.com", MSFT:"microsoft.com", GOOGL:"google.com", GOOG:"google.com",
+ AMZN:"amazon.com", META:"meta.com", NVDA:"nvidia.com", TSLA:"tesla.com",
+ NFLX:"netflix.com", AMD:"amd.com", INTC:"intel.com", PLTR:"palantir.com",
+ ONON:"on.com", NKE:"nike.com", DIS:"disney.com", PYPL:"paypal.com",
+ SHOP:"shopify.com", UBER:"uber.com", ABNB:"airbnb.com", COIN:"coinbase.com",
+ HOOD:"robinhood.com", SOFI:"sofi.com", SQ:"block.xyz", XYZ:"block.xyz",
+ V:"visa.com", MA:"mastercard.com", JPM:"jpmorganchase.com", BAC:"bankofamerica.com",
+ "BRK.B":"berkshirehathaway.com", KO:"coca-cola.com", PEP:"pepsico.com",
+ COST:"costco.com", WMT:"walmart.com", TGT:"target.com", MCD:"mcdonalds.com",
+ SBUX:"starbucks.com", CRM:"salesforce.com", ORCL:"oracle.com", ADBE:"adobe.com",
+ IBM:"ibm.com", QCOM:"qualcomm.com", AVGO:"broadcom.com", TSM:"tsmc.com",
+ ASML:"asml.com", MU:"micron.com", ARM:"arm.com", SMCI:"supermicro.com",
+ RDDT:"reddit.com", SNAP:"snap.com", SPOT:"spotify.com", RBLX:"roblox.com",
+ DUOL:"duolingo.com", CRWD:"crowdstrike.com", PANW:"paloaltonetworks.com",
+ NET:"cloudflare.com", DDOG:"datadoghq.com", SNOW:"snowflake.com",
+ ZS:"zscaler.com", OKTA:"okta.com", MDB:"mongodb.com", NOW:"servicenow.com",
+ VOO:"vanguard.com", VTI:"vanguard.com", VGT:"vanguard.com", VUG:"vanguard.com",
+ QQQ:"invesco.com", QQQM:"invesco.com", SPY:"ssga.com", IVV:"ishares.com",
+ IWM:"ishares.com", IBIT:"ishares.com", SCHD:"schwab.com", SCHG:"schwab.com",
+ BABA:"alibabagroup.com", JD:"jd.com", PDD:"pddholdings.com", NIO:"nio.com",
+ LI:"lixiang.com", XPEV:"xpeng.com", RIVN:"rivian.com", LCID:"lucidmotors.com",
+ F:"ford.com", GM:"gm.com", BA:"boeing.com", CAT:"caterpillar.com",
+ GE:"ge.com", LLY:"lilly.com", UNH:"unitedhealthgroup.com", JNJ:"jnj.com",
+ PFE:"pfizer.com", ABBV:"abbvie.com", MRK:"merck.com", NVO:"novonordisk.com",
+ ISRG:"intuitive.com", HIMS:"hims.com", CELH:"celsius.com",
+ ENPH:"enphase.com", FSLR:"firstsolar.com", XOM:"exxonmobil.com",
+ CVX:"chevron.com", OXY:"oxy.com", T:"att.com", VZ:"verizon.com",
+ TMUS:"t-mobile.com", CSCO:"cisco.com", DELL:"dell.com", HPQ:"hp.com",
+ LULU:"lululemon.com", CROX:"crocs.com", DECK:"deckers.com",
+ SE:"sea.com", MELI:"mercadolibre.com", NU:"nu.com", GRAB:"grab.com",
+ BTC:"bitcoin.org", ETH:"ethereum.org"
+};
 function StockLogo({ticker}) {
+ const symbol = String(ticker || "").trim().toUpperCase();
+ const domain = STOCK_LOGO_DOMAINS[symbol];
  const [source,setSource] = useState(0);
- const images = ticker.toUpperCase() === "ONON" ? ["https://logo.clearbit.com/on-running.com", "https://financialmodelingprep.com/image-stock/ONON.png"] : [`https://financialmodelingprep.com/image-stock/${encodeURIComponent(ticker)}.png`];
- return <div className="stock-logo">{source < images.length && <img key={source} src={images[source]} alt="" onError={()=>setSource(i=>i+1)} loading="lazy" />}<span>{ticker.slice(0,2)}</span></div>;
+ useEffect(() => setSource(0), [symbol]);
+ const images = [
+   ...(domain ? [`https://www.google.com/s2/favicons?domain=${domain}&sz=128`] : []),
+   `https://financialmodelingprep.com/image-stock/${encodeURIComponent(symbol)}.png`,
+   `https://assets.parqet.com/logos/symbol/${encodeURIComponent(symbol)}?format=png`
+ ];
+ return <div className="stock-logo">
+   {source < images.length
+     ? <img key={symbol + "-" + source} src={images[source]} alt={`לוגו ${symbol}`} onError={() => setSource(i => i + 1)} loading="lazy" />
+     : <ChartNoAxesCombined size={23} strokeWidth={1.8} aria-label="סמל מניה" />}
+ </div>;
 }
 function StockHistory({ticker}) {
  const [range,setRange]=useState("1M");
