@@ -41,6 +41,12 @@ const OWNERS = [
   { id: "guy", label: "GUY", he: "גיא", color: "#7CC3F0" },
 ];
 
+function OwnerAvatar({ owner, size = "normal" }) {
+  return <span className={`owner-avatar owner-avatar-${size}`} style={{ background: owner.color }}>
+    {owner.id === "ron" ? <img src="/avatars/ron.webp" alt="" /> : <span>{owner.label[0]}</span>}
+  </span>;
+}
+
 const CALLS = [
   { id: "buy", he: "להגדיל" },
   { id: "hold", he: "להחזיק" },
@@ -719,7 +725,7 @@ function Gate({ onPick }) {
         </div>
         {OWNERS.map((o) => (
           <button key={o.id} className="pick" onClick={() => onPick(o.id)}>
-            <span className="av" style={{ background: o.color }}>{o.label[0]}</span>
+            <OwnerAvatar owner={o} size="large" />
             <span className="grow">
               <span className="t1" style={{ display: "block" }}>{o.label}</span>
               <span className="t2" style={{ display: "block" }}>
@@ -1100,7 +1106,7 @@ export default function Dashboard() {
     <div className="shell">
       <div className="head">
         <div>
-          <div className="hello">שלום, {ownerOf(me).he}</div>
+          <div className="hello"><OwnerAvatar owner={ownerOf(me)} size="small" /> שלום, {ownerOf(me).he}</div>
           <div className="date">
             {todayHe()}
 
@@ -1241,7 +1247,7 @@ export default function Dashboard() {
           </button>
           {OWNERS.map((o) => (
             <button key={o.id} data-on={tab === o.id ? 1 : 0} onClick={() => { setTab(o.id); }}>
-              <Wallet size={19} />
+              <OwnerAvatar owner={o} size="small" />
               {o.label}
             </button>
           ))}
