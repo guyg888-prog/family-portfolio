@@ -768,8 +768,9 @@ function Gate({ onPick }) {
         <div style={{ fontSize: 14, color: "var(--mut)", margin: "8px 0 24px", lineHeight: 1.6 }}>
           מי אתם? כל אחד רואה ועורך רק את התיק שלו. מארק רואה את שלושתם.
         </div>
+        <div className="profile-picker">
         {OWNERS.map((o) => (
-          <button key={o.id} className="pick" onClick={() => onPick(o.id)}>
+          <button key={o.id} className="pick profile-pick" onClick={() => onPick(o.id)}>
             <OwnerAvatar owner={o} size="large" />
             <span className="grow">
               <span className="t1" style={{ display: "block" }}>{o.label}</span>
@@ -779,6 +780,7 @@ function Gate({ onPick }) {
             </span>
           </button>
         ))}
+        </div>
         <div className="hint" style={{ marginTop: 18 }}>
           הבחירה נשמרת במכשיר שלכם ואפשר להחליף בכל רגע.
         </div>
