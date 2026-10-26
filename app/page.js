@@ -621,7 +621,7 @@ const STOCK_LOGO_DOMAINS = {
  SHOP:"shopify.com", UBER:"uber.com", ABNB:"airbnb.com", COIN:"coinbase.com",
  HOOD:"robinhood.com", SOFI:"sofi.com", SQ:"block.xyz", XYZ:"block.xyz",
  V:"visa.com", MA:"mastercard.com", JPM:"jpmorganchase.com", BAC:"bankofamerica.com",
- BRK.B:"berkshirehathaway.com", KO:"coca-cola.com", PEP:"pepsico.com",
+ "BRK.B":"berkshirehathaway.com", KO:"coca-cola.com", PEP:"pepsico.com",
  COST:"costco.com", WMT:"walmart.com", TGT:"target.com", MCD:"mcdonalds.com",
  SBUX:"starbucks.com", CRM:"salesforce.com", ORCL:"oracle.com", ADBE:"adobe.com",
  IBM:"ibm.com", QCOM:"qualcomm.com", AVGO:"broadcom.com", TSM:"tsmc.com",
