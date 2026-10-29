@@ -679,7 +679,7 @@ function StockHistory({ticker}) {
  },[ticker,range,cache]);
  const points=cache[range];
  const positive=!points?.length||points[points.length-1].close>=points[0].close;
- return <div className="stock-history"><div className="stock-ranges">{STOCK_RANGES.map(([key,label])=><button key={key} type="button" data-on={range===key?1:0} onClick={()=>setRange(key)}>{label}</button>)}</div><div className="stock-chart">{points?.length>1?<ResponsiveContainer width="100%" height="100%"><AreaChart data={points}><Tooltip formatter={v=>usd(v)} labelFormatter={v=>new Date(v).toLocaleString("he-IL")}/><Area dataKey="close" type="monotone" stroke={positive?"#12b76a":"#f04438"} fill="none" strokeWidth={2} dot={false} isAnimationActive={false}/></AreaChart></ResponsiveContainer>:<div className="stock-chart-placeholder">{loading?"טוען גרף…":"אין נתוני גרף זמינים"}</div>}</div></div>;
+ return <div className="stock-history"><div className="stock-ranges">{STOCK_RANGES.map(([key,label])=><button key={key} type="button" data-on={range===key?1:0} onClick={()=>setRange(key)}>{label}</button>)}</div><div className="stock-chart">{points === undefined ? <div className="skel skel-stock-chart" role="status" aria-label="טוען גרף מניה" /> : points?.length>1?<ResponsiveContainer width="100%" height="100%"><AreaChart data={points}><Tooltip formatter={v=>usd(v)} labelFormatter={v=>new Date(v).toLocaleString("he-IL")}/><Area dataKey="close" type="monotone" stroke={positive?"#12b76a":"#f04438"} fill="none" strokeWidth={2} dot={false} isAnimationActive={false}/></AreaChart></ResponsiveContainer>:<div className="stock-chart-placeholder">{loading?"טוען גרף…":"אין נתוני גרף זמינים"}</div>}</div></div>;
 }
 function PositionCard(props) {
   const { r, canEdit, canCall, editing, adjusting, confirming, research, portfolioTotal } = props;
@@ -791,6 +791,18 @@ function Gate({ onPick }) {
 
 /* ------------------------------------------------------------------ */
 
+function DashboardSkeleton() {
+ return <div className="shell" role="status" aria-label="טוען נתוני תיק" aria-busy="true">
+   <div className="head"><div className="skel skel-head" /><div className="skel skel-head" /></div>
+   <div className="page skeleton-page">
+     <div className="summary-layout"><div className="card skeleton-summary"><div className="skel skel-label" /><div className="skel skel-total" /><div className="skeleton-kpis"><div className="skel skel-kpi" /><div className="skel skel-kpi" /></div></div><div className="card skeleton-cash"><div className="skel skel-label" /><div className="skel skel-total" /></div></div>
+     <div className="card skeleton-panel"><div className="skel skel-label" /><div className="skel skel-chart" /></div>
+     <div className="card skeleton-panel"><div className="skel skel-label" /><div className="skel skel-chart" /></div>
+     <div className="card skeleton-panel"><div className="skel skel-label" /><div className="skeleton-stock-grid">{[0,1,2].map(i=><div key={i} className="skel skel-stock" />)}</div></div>
+   </div>
+ </div>;
+}
+
 export default function Dashboard() {
   const [data, setData] = useState(EMPTY);
   const [history, setHistory] = useState([]);
@@ -805,6 +817,7 @@ export default function Dashboard() {
     return () => window.removeEventListener("scroll", updateHeader);
   }, []);
   const [ready, setReady] = useState(false);
+  const [stateLoading, setStateLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState(null);
   const [draft, setDraft] = useState({ ticker: "", qty: "", cost: "" });
@@ -836,18 +849,25 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!me) return;
+    let cancelled = false;
+    setStateLoading(true);
     setTab(me === "mark" ? "overview" : me);
     (async () => {
       try {
         const res = await fetch(`/api/state?me=${me}`);
         if (!res.ok) throw new Error();
         const j = await res.json();
-        setData({ ...EMPTY, ...(j.data || {}) });
-        setHistory(j.history || []);
+        if (!cancelled) {
+          setData({ ...EMPTY, ...(j.data || {}) });
+          setHistory(j.history || []);
+        }
       } catch (e) {
-        setErr("לא הצלחתי לטעון את הנתונים.");
+        if (!cancelled) setErr("לא הצלחתי לטעון את הנתונים.");
+      } finally {
+        if (!cancelled) setStateLoading(false);
       }
     })();
+    return () => { cancelled = true; };
   }, [me]);
 
   const persist = useCallback(
@@ -1135,8 +1155,9 @@ export default function Dashboard() {
 
   /* ---- render ---- */
 
-  if (!ready) return <div className="gate"><span className="hint">טוען…</span></div>;
+  if (!ready) return <DashboardSkeleton />;
   if (!me) return <Gate onPick={pickMe} />;
+  if (stateLoading) return <DashboardSkeleton />;
 
   const isOverview = tab === "overview";
   const bk = isOverview ? grand : byOwner[tab] || grand;
