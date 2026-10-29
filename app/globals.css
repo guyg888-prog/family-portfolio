@@ -1137,3 +1137,15 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 .portfolio-hero .summary-change-money {
   text-align: right;
 }
+
+/* Keep chart time filters anchored to the right, rather than stretched */
+.trend-toolbar { flex-direction: column; align-items: flex-start; }
+.trend-ranges { width: max-content; max-width: 100%; justify-content: flex-start; align-self: flex-start; }
+@media (max-width: 700px) {
+  .trend-ranges { width: max-content; max-width: 100%; justify-content: flex-start; }
+  .trend-range { padding-inline: 10px; }
+}
+@media (max-width: 420px) {
+  .trend-ranges { gap: 2px; padding: 3px; }
+  .trend-range { padding: 8px 7px; font-size: 11px; }
+}
