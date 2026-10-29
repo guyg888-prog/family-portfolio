@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 const IDS = ["mark", "ron", "guy"];
 
 const ACTIVITY_LIMIT = 250;
-const asNumber = (v) => Number(String(v ?? "").replace(/[^\\d.-]/g, "")) || 0;
+const asNumber = (v) => Number(String(v ?? "").replace(/[^0-9.-]/g, "")) || 0;
 function detectActivity(previous, next, actor) {
   const events = [];
   const stamp = new Date().toISOString();
@@ -83,6 +83,7 @@ export async function PUT(req) {
 
     const current = { ...EMPTY_STATE, ...(await getKey("state", EMPTY_STATE)) };
 
+    let savedEvents = [];
     if (body.data) {
       let next;
       if (who === "mark") {
@@ -110,6 +111,7 @@ export async function PUT(req) {
         };
       }
       const events = detectActivity(current, next, who);
+      savedEvents = events;
       await setKey("state", next);
       if (events.length) {
         const existing = await getKey("activity", []);
@@ -130,7 +132,7 @@ export async function PUT(req) {
       await setKey("history", next);
     }
 
-    return Response.json({ ok: true });
+    return Response.json({ ok: true, activity: savedEvents });
   } catch (e) {
     return Response.json({ error: "save_failed" }, { status: 500 });
   }
