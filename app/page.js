@@ -106,6 +106,36 @@ function Kpi({ label, value, delta, foot }) {
   );
 }
 
+function ActivityFeed({ activity, overview }) {
+  const [filter,setFilter] = useState("all");
+  const [showAll,setShowAll] = useState(false);
+  const filters = [{id:"all",label:"הכול"},{id:"trade",label:"קנייה ומכירה"},{id:"updates",label:"עדכונים"}];
+  const trades = ["add","buy","sell","remove"];
+  const filtered = activity.filter(e=>filter==="all" || (filter==="trade" ? trades.includes(e.type) : !trades.includes(e.type)));
+  const shown = showAll ? filtered : filtered.slice(0,6);
+  const meta = {
+    add:{label:"פוזיציה חדשה",icon:Plus,kind:"buy"},
+    buy:{label:"קניית מניות",icon:ArrowDownRight,kind:"buy"},
+    sell:{label:"מכירת מניות",icon:ArrowUpRight,kind:"sell"},
+    remove:{label:"הסרת פוזיציה",icon:Trash2,kind:"neutral"},
+    edit:{label:"עדכון פוזיציה",icon:Pencil,kind:"neutral"},
+    cash:{label:"עדכון מזומן",icon:Wallet,kind:"neutral"},
+    deposits:{label:"עדכון הפקדות",icon:Coins,kind:"neutral"},
+    call:{label:"עדכון הוראה",icon:Activity,kind:"neutral"},
+  };
+  const time = value => { const d=new Date(value);return Number.isNaN(d.getTime()) ? "" : d.toLocaleString("he-IL",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}); };
+  return <section className="card activity-section" aria-label="פעילות בתיק">
+    <div className="activity-top"><div><h2 className="ctitle">הפעילות בתיק</h2><p className="csub">ריכוז הפעולות שבוצעו בתיק, מהחדשות לישנות</p></div><span className="activity-count">{activity.length} פעולות</span></div>
+    <div className="activity-filters" role="group" aria-label="סינון פעולות">{filters.map(f=><button key={f.id} type="button" className={"activity-filter"+(filter===f.id?" selected":"")} aria-pressed={filter===f.id} onClick={()=>{setFilter(f.id);setShowAll(false);}}>{f.label}</button>)}</div>
+    {shown.length ? <div className="activity-list">{shown.map(e=>{const m=meta[e.type]||meta.edit;const Icon=m.icon;const owner=ownerOf(e.owner);return <div className="activity-row" key={e.id}>
+      <div className={"activity-icon "+m.kind}><Icon size={19}/></div>
+      <div className="activity-details"><div className="activity-row-title">{m.label}{e.ticker&&<strong dir="ltr">{e.ticker}</strong>}</div><div className="activity-row-sub"><span>{time(e.at)}</span>{overview&&owner&&<span className="activity-owner"><OwnerAvatar owner={owner} size="small"/>{owner.he}</span>}</div></div>
+      <div className="activity-amount">{Number.isFinite(e.quantity)&&e.quantity>0&&<strong dir="ltr">{e.quantity.toLocaleString("en-US",{maximumFractionDigits:4})} מניות</strong>}{Number.isFinite(e.amount)&&<strong dir="ltr">{e.amount>0?"+":""}{usd(e.amount,2)}</strong>}{Number.isFinite(e.price)&&<span dir="ltr">{usd(e.price,2)} למניה</span>}</div>
+    </div>})}</div>:<div className="activity-empty"><Activity size={25}/><strong>{activity.length?"אין פעולות בסינון הזה":"עדיין אין פעולות מתועדות"}</strong><span>{activity.length?"אפשר לבחור סינון אחר כדי לראות פעולות.":"פעולות חדשות, כמו הוספת פוזיציה, קנייה, מכירה ועריכה, יופיעו כאן לאחר שמירתן."}</span></div>}
+    {filtered.length>6&&<button className="activity-more" type="button" onClick={()=>setShowAll(v=>!v)}>{showAll?"הצגת פחות פעולות":`הצגת כל ${filtered.length} הפעולות`}</button>}
+  </section>;
+}
+
 function PortfolioSummary({ book, isOverview }) {
   const purchaseChange = book.held - book.basis;
   const purchasePct = book.basis ? (purchaseChange / book.basis) * 100 : 0;
@@ -814,6 +844,7 @@ function DashboardSkeleton({ overview = false }) {
 export default function Dashboard() {
   const [data, setData] = useState(EMPTY);
   const [history, setHistory] = useState([]);
+  const [activity, setActivity] = useState([]);
   const [quotes, setQuotes] = useState({});
   const [me, setMe] = useState(null);
   const [tab, setTab] = useState(null);
@@ -885,6 +916,7 @@ export default function Dashboard() {
         if (!cancelled) {
           setData({ ...EMPTY, ...(j.data || {}) });
           setHistory(j.history || []);
+          setActivity(j.activity || []);
         }
       } catch (e) {
         if (!cancelled) setErr("לא הצלחתי לטעון את הנתונים.");
@@ -1181,6 +1213,7 @@ export default function Dashboard() {
     setMe(null);
     setData(EMPTY);
     setHistory([]);
+    setActivity([]);
   };
 
   /* ---- render ---- */
@@ -1268,6 +1301,8 @@ export default function Dashboard() {
             expanded
           />
         </div>
+
+        <ActivityFeed activity={activity} overview={isOverview} />
 
         {isOverview && me === "mark" && (
           <div className="card">
