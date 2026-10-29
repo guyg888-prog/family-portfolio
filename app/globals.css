@@ -1514,3 +1514,26 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .donutwrap-expanded .lrow { transition: none; }
 }
+
+/* Historical value: unboxed period metrics and chart aligned with section heading */
+@media (min-width: 960px) {
+  .trend-section { --trend-chart-lift: 70px; }
+  .trend-experience .trend-toolbar-copy {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 12px 4px;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .trend-experience > .trend-plot,
+  .trend-experience > .trend-empty {
+    position: relative;
+    top: calc(-1 * var(--trend-chart-lift));
+    height: calc(100% + var(--trend-chart-lift));
+    min-height: 410px;
+  }
+  .trend-experience > .trend-empty { min-height: 340px; }
+}
