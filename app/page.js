@@ -238,13 +238,14 @@ function TrendChart({ history, keys }) {
           />
           <Tooltip
             contentStyle={{
-              background: "#fff",
-              border: "1px solid #E8ECF4",
+              background: "var(--card)",
+              color: "var(--ink)",
+              border: "1px solid var(--line)",
               borderRadius: 12,
               fontSize: 12,
               boxShadow: "0 8px 24px rgba(16,23,54,.10)",
             }}
-            labelStyle={{ color: "#6B7A99", marginBottom: 2 }}
+            labelStyle={{ color: "var(--mut)", marginBottom: 2 }}
             formatter={(v) => [usd(v, 0), "שווי"]}
           />
           <Area
