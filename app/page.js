@@ -238,7 +238,7 @@ function TrendChart({ history, keys }) {
     .map(h => ({ timestamp: new Date(h.d).getTime(), label: dayLabel(h.d), total: keys.reduce((sum, key) => sum + (Number(h[key]) || 0), 0) }))
     .filter(point => Number.isFinite(point.timestamp) && Number.isFinite(point.total) && point.total > 0)
     .sort((a,b) => a.timestamp - b.timestamp), [history, keys]);
-  const ranges = [{id:"7D",label:"7 ימים",days:7},{id:"1M",label:"חודש",days:30},{id:"3M",label:"3 חודשים",days:90},{id:"1Y",label:"שנה",days:365},{id:"ALL",label:"הכול",days:null}];
+  const ranges = [{id:"ALL",label:"הכול",days:null},{id:"7D",label:"7 ימים",days:7},{id:"1M",label:"חודש",days:30},{id:"3M",label:"3 חודשים",days:90},{id:"1Y",label:"שנה",days:365}];
   const latest = allData[allData.length - 1];
   const data = range === "ALL" || !latest ? allData : allData.filter(p => p.timestamp >= latest.timestamp - ranges.find(r => r.id === range).days * 86400000);
   const first = data[0], last = data[data.length - 1];
