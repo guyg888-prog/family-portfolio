@@ -110,23 +110,25 @@ function PortfolioSummary({ book, isOverview }) {
   const purchaseChange = book.held - book.basis;
   const purchasePct = book.basis ? (purchaseChange / book.basis) * 100 : 0;
   const change = (label, amount, percent) => (
-    <div className="summary-change">
-      <div className="summary-change-label">{amount > 0 ? <TrendingUp size={17} /> : amount < 0 ? <TrendingDown size={17} /> : <Activity size={17} />}{label}</div>
-      <div className={"summary-change-amount " + tone(amount)} dir="ltr">
-        <span className="summary-change-percent">{pct(percent)}</span>
-        <span className="summary-change-money">{amount > 0 ? "+" : amount < 0 ? "−" : ""}{usd(Math.abs(amount), 2)}</span>
+    <div className="summary-change" key={label}>
+      <div className="summary-change-label">{label}</div>
+      <div className="summary-change-amount" dir="ltr">
+        <span className={`summary-change-percent ${tone(amount)}`}>{pct(percent)}</span>
+        <span className={`summary-direction ${amount > 0 ? "positive" : amount < 0 ? "negative" : "neutral"}`} aria-hidden="true">{amount > 0 ? <ArrowUpRight size={17} /> : amount < 0 ? <ArrowDownRight size={17} /> : <Activity size={15} />}</span>
       </div>
+      <span className="summary-change-money" dir="ltr">{amount > 0 ? "+" : amount < 0 ? "−" : ""}{usd(Math.abs(amount), 2)}</span>
     </div>
   );
   return (
-    <section className="portfolio-summary" aria-label="סיכום מצב התיק">
-      <div className="summary-title">{isOverview ? "שווי התיקים הכולל" : "מצב החשבון שלי"}</div>
+    <section className="portfolio-summary portfolio-hero" aria-label="סיכום מצב התיק">
+      <div className="portfolio-hero-eyebrow"><span className="portfolio-hero-mark" /> סקירת תיק השקעות <span className="portfolio-hero-live">USD</span></div>
+      <h1 className="summary-title">{isOverview ? "שווי התיקים הכולל" : "מצב החשבון שלי"}</h1>
       <div className="summary-total" dir="ltr">{usd(book.total, 0)}</div>
+      <div className="portfolio-hero-divider" />
       <div className="summary-changes">
         {change("שינוי יומי", book.day, book.dayPct)}
         {change("שינוי ממועד הקנייה", purchaseChange, purchasePct)}
       </div>
-      
     </section>
   );
 }
@@ -202,62 +204,41 @@ function Donut({ slices, centerValue, centerLabel, expanded = false }) {
 }
 
 function TrendChart({ history, keys }) {
-  const data = history.map((h) => ({
-    label: dayLabel(h.d),
-    total: keys.reduce((s, k) => s + (h[k] || 0), 0),
-  }));
-  if (data.length < 2)
-    return (
-      <div className="hint">
-        נרשמה נקודה אחת בלבד. הגרף נפתח אחרי הרענון הבא ביום אחר — כל רענון שומר את שווי היום.
-      </div>
-    );
+  const [range, setRange] = useState("ALL");
+  const allData = useMemo(() => history
+    .map(h => ({ timestamp: new Date(h.d).getTime(), label: dayLabel(h.d), total: keys.reduce((sum, key) => sum + (Number(h[key]) || 0), 0) }))
+    .filter(point => Number.isFinite(point.timestamp) && Number.isFinite(point.total))
+    .sort((a,b) => a.timestamp - b.timestamp), [history, keys]);
+  const ranges = [{id:"7D",label:"7 ימים",days:7},{id:"1M",label:"חודש",days:30},{id:"3M",label:"3 חודשים",days:90},{id:"1Y",label:"שנה",days:365},{id:"ALL",label:"הכול",days:null}];
+  const latest = allData[allData.length - 1];
+  const data = range === "ALL" || !latest ? allData : allData.filter(p => p.timestamp >= latest.timestamp - ranges.find(r => r.id === range).days * 86400000);
+  const first = data[0], last = data[data.length - 1];
+  const delta = data.length > 1 ? last.total - first.total : null;
+  const deltaPct = delta !== null && first.total !== 0 ? delta / Math.abs(first.total) * 100 : null;
   return (
-    <div style={{ height: 180, direction: "ltr", marginRight: -8, marginLeft: -8 }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 6, right: 8, left: -12, bottom: 0 }}>
-          <defs>
-            <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#3B6FE0" stopOpacity={0.22} />
-              <stop offset="100%" stopColor="#3B6FE0" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <XAxis
-            dataKey="label"
-            tick={{ fill: "#97A3BA", fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
-            minTickGap={26}
-          />
-          <YAxis
-            tick={{ fill: "#97A3BA", fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
-            tickFormatter={usdShort}
-            width={48}
-          />
-          <Tooltip
-            contentStyle={{
-              background: "var(--card)",
-              color: "var(--ink)",
-              border: "1px solid var(--line)",
-              borderRadius: 12,
-              fontSize: 12,
-              boxShadow: "0 8px 24px rgba(16,23,54,.10)",
-            }}
-            labelStyle={{ color: "var(--mut)", marginBottom: 2 }}
-            formatter={(v) => [usd(v, 0), "שווי"]}
-          />
-          <Area
-            type="monotone"
-            dataKey="total"
-            stroke="#3B6FE0"
-            strokeWidth={2.4}
-            fill="url(#fill)"
-            isAnimationActive={false}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+    <div className="trend-experience">
+      <div className="trend-toolbar">
+        <div className="trend-toolbar-copy"><span className="trend-eyebrow">התפתחות שווי התיק</span>
+          <strong dir="ltr" className="trend-current">{last ? usd(last.total,0) : "—"}</strong>
+          <div className="trend-change-line">{delta !== null && deltaPct !== null ? <span className={`trend-period-change ${tone(delta)}`} dir="ltr">{delta > 0 ? "+" : ""}{usd(delta,0)} <span>({pct(deltaPct)})</span></span> : <span className="trend-period-note">אין מספיק נקודות להשוואה בטווח הזה</span>}</div>
+        </div>
+        <div className="trend-ranges" role="group" aria-label="טווח תצוגת גרף">
+          {ranges.map(r=><button key={r.id} type="button" className={`trend-range ${range===r.id?"active":""}`} aria-pressed={range===r.id} onClick={()=>setRange(r.id)}>{r.label}</button>)}
+        </div>
+      </div>
+      {data.length < 2 ? <div className="trend-empty"><ChartNoAxesCombined size={26}/><strong>עדיין אין מספיק נתונים לגרף</strong><span>הגרף מבוסס על תצלומי שווי שנשמרו לאורך זמן. ניתן לבחור טווח ארוך יותר או להמתין לנתונים נוספים.</span></div> :
+      <div className="trend-plot" dir="ltr">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data} margin={{top:16,right:6,left:0,bottom:0}}>
+            <defs><linearGradient id="portfolio-trend-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#5a92ff" stopOpacity={0.24}/><stop offset="100%" stopColor="#5a92ff" stopOpacity={0}/></linearGradient></defs>
+            <XAxis dataKey="label" tick={{fill:"var(--mut)",fontSize:11}} axisLine={false} tickLine={false} minTickGap={28} dy={9}/>
+            <YAxis tick={{fill:"var(--mut)",fontSize:11}} axisLine={false} tickLine={false} tickFormatter={usdShort} width={54} domain={["auto","auto"]}/>
+            <Tooltip cursor={{stroke:"var(--mut)",strokeDasharray:"3 4",strokeOpacity:.45}} contentStyle={{background:"var(--card)",color:"var(--ink)",border:"1px solid var(--line)",borderRadius:12,boxShadow:"0 12px 30px rgba(0,0,0,.12)"}} labelStyle={{color:"var(--mut)"}} formatter={v=>[usd(v,0),"שווי התיק"]}/>
+            <Area type="monotone" dataKey="total" stroke="#6496f8" strokeWidth={3} fill="url(#portfolio-trend-fill)" dot={false} activeDot={{r:5,stroke:"var(--card)",strokeWidth:2}} isAnimationActive={false}/>
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>}
+      <div className="trend-footnote"><span className="trend-footnote-dot" /> נתוני הגרף מבוססים על תצלומי התיק שנשמרו, ולא על מחירי שוק היסטוריים רציפים.</div>
     </div>
   );
 }
@@ -1264,7 +1245,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className="card">
+        <div className="card trend-section">
           <div className="ctitle">שווי לאורך זמן</div>
           <div className="csub">נבנה מתצלום שנשמר בכל רענון. הפקדות אינן נספרות כרווח.</div>
           <TrendChart history={history} keys={chartKeys} />
