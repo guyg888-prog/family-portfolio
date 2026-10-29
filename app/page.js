@@ -704,13 +704,13 @@ function PositionCard(props) {
 
       <div className="stock-performance">
         <div>
-          <span className="stock-change-label">{dayMoney > 0 ? <TrendingUp size={16} /> : dayMoney < 0 ? <TrendingDown size={16} /> : <Activity size={16} />} שינוי יומי</span>
+          <span className="stock-change-label">שינוי יומי</span>
           <strong className={tone(dayMoney)} dir="ltr">
             {dayMoney === null ? "—" : <><span className="stock-pct"><span>{pct(r.day)}</span>{r.day !== null && <span className={`performance-badge ${r.day > 0 ? "positive" : r.day < 0 ? "negative" : "neutral"}`} aria-hidden="true">{r.day > 0 ? <TrendingUp size={12} /> : r.day < 0 ? <TrendingDown size={12} /> : <Activity size={12} />}</span>}</span><span className="stock-money">{dayMoney > 0 ? "+" : ""}{usd(dayMoney)}</span></>}
           </strong>
         </div>
         <div>
-          <span className="stock-change-label">{r.pl > 0 ? <TrendingUp size={16} /> : r.pl < 0 ? <TrendingDown size={16} /> : <Activity size={16} />} שינוי ממועד הקנייה</span>
+          <span className="stock-change-label">שינוי ממועד הקנייה</span>
           <strong className={tone(r.pl)} dir="ltr">
             {r.pl === null ? "—" : <><span className="stock-pct"><span>{pct(r.plPct)}</span>{r.plPct !== null && <span className={`performance-badge ${r.plPct > 0 ? "positive" : r.plPct < 0 ? "negative" : "neutral"}`} aria-hidden="true">{r.plPct > 0 ? <TrendingUp size={12} /> : r.plPct < 0 ? <TrendingDown size={12} /> : <Activity size={12} />}</span>}</span><span className="stock-money">{r.pl > 0 ? "+" : ""}{usd(r.pl)}</span></>}
           </strong>
