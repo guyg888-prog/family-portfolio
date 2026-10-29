@@ -1649,3 +1649,15 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
   white-space: nowrap;
 }
 .summary-change-amount .summary-change-percent { white-space: nowrap; }
+
+/* Extend the portfolio hero's soft blue gradient across dashboard sections */
+.page > .card,
+.page > .activity-feed,
+.page > section.card {
+  background: linear-gradient(135deg, var(--card) 50%, #f0f5ff 145%);
+}
+:root[data-theme="dark"] .page > .card,
+:root[data-theme="dark"] .page > .activity-feed,
+:root[data-theme="dark"] .page > section.card {
+  background: linear-gradient(135deg, var(--card) 50%, #1c2d48 145%);
+}
