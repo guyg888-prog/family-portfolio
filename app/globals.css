@@ -1629,3 +1629,23 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
     padding: 14px 13px;
   }
 }
+
+/* Keep dollar and percentage movements on one line in summary cards */
+.summary-change-amount {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  direction: ltr;
+}
+.summary-change-amount .summary-change-money {
+  display: inline;
+  margin: 0;
+  text-align: inherit;
+  font-size: clamp(13px, 1.35vw, 17px);
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.summary-change-amount .summary-change-percent { white-space: nowrap; }
