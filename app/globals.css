@@ -1268,3 +1268,50 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 @media (min-width: 700px) and (max-width: 999px) {
   .donutwrap-expanded .donut { width: 100%; max-width: 430px; height: 410px; }
 }
+
+/* Historical chart: balanced desktop composition, with no redundant USD badge */
+.portfolio-hero .portfolio-hero-live { display: none; }
+@media (min-width: 960px) {
+  .trend-experience {
+    display: grid;
+    grid-template-columns: minmax(220px, 31%) minmax(0, 1fr);
+    grid-template-rows: auto minmax(290px, auto) auto;
+    column-gap: 28px;
+    row-gap: 16px;
+    align-items: stretch;
+  }
+  .trend-experience > .trend-toolbar { display: contents; }
+  .trend-experience .trend-toolbar-copy {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: stretch;
+    justify-content: center;
+    padding: 28px 24px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    border-radius: 18px;
+    min-width: 0;
+  }
+  .trend-experience .trend-ranges {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+    justify-self: start;
+    width: max-content;
+    max-width: 100%;
+    margin: 0;
+  }
+  .trend-experience > .trend-plot,
+  .trend-experience > .trend-empty {
+    grid-column: 2;
+    grid-row: 2;
+    min-width: 0;
+    width: 100%;
+  }
+  .trend-experience > .trend-plot { height: 340px; }
+  .trend-experience > .trend-footnote {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    margin-top: 0;
+  }
+}
