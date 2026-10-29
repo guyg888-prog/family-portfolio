@@ -699,15 +699,6 @@ function PositionCard(props) {
         </div>
       </div>
 
-      <StockHistory ticker={r.ticker} />
-
-      <div className="stock-stats">
-        <div><span>מספר מניות</span><strong dir="ltr">{r.qty}</strong></div>
-        <div><span>שווי אחזקה</span><strong dir="ltr">{r.value === null ? "—" : usd(r.value)}</strong></div>
-        <div><span>מחיר קנייה ממוצע</span><strong dir="ltr">{usd(r.cost)}</strong></div>
-        <div><span>אחוז מהחשבון</span><strong dir="ltr">{pct(weight)}</strong></div>
-      </div>
-
       <div className="stock-performance">
         <div>
           <span className="stock-change-label">{dayMoney > 0 ? <TrendingUp size={16} /> : dayMoney < 0 ? <TrendingDown size={16} /> : <Activity size={16} />} שינוי יומי</span>
@@ -722,6 +713,15 @@ function PositionCard(props) {
           </strong>
         </div>
       </div>
+
+      <div className="stock-stats">
+        <div><span>מספר מניות</span><strong dir="ltr">{r.qty}</strong></div>
+        <div><span>שווי אחזקה</span><strong dir="ltr">{r.value === null ? "—" : usd(r.value)}</strong></div>
+        <div><span>מחיר קנייה ממוצע</span><strong dir="ltr">{usd(r.cost)}</strong></div>
+        <div><span>אחוז מהחשבון</span><strong dir="ltr">{pct(weight)}</strong></div>
+      </div>
+
+      <StockHistory ticker={r.ticker} />
 
       {r.call && !editing && (
         <div className="note">
