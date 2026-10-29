@@ -1388,3 +1388,93 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
   .trend-experience .trend-ranges { direction: rtl; }
   .trend-experience .trend-range { font-size: 13px; padding: 10px 13px; }
 }
+
+/* Historical value desktop: right-hand filters and performance, expansive left-hand chart */
+@media (min-width: 960px) {
+  .trend-experience {
+    display: grid;
+    direction: rtl;
+    grid-template-columns: minmax(300px, 34%) minmax(0, 1fr);
+    grid-template-rows: minmax(340px, auto) auto;
+    gap: 18px 28px;
+    align-items: stretch;
+  }
+  .trend-experience > .trend-toolbar {
+    display: flex;
+    flex-direction: column;
+    direction: rtl;
+    grid-column: 1;
+    grid-row: 1;
+    justify-content: flex-start;
+    align-items: stretch;
+    flex-wrap: nowrap;
+    gap: 24px;
+    min-width: 0;
+    margin: 0;
+  }
+  .trend-experience .trend-ranges {
+    order: 0;
+    display: flex;
+    flex-wrap: wrap;
+    direction: rtl;
+    justify-content: flex-start;
+    align-self: stretch;
+    width: 100%;
+    max-width: 100%;
+    flex: none;
+    gap: 4px;
+    padding: 5px;
+    margin: 0;
+  }
+  .trend-experience .trend-range {
+    font-size: 14px;
+    padding: 12px 11px;
+    flex: 1 1 auto;
+    white-space: nowrap;
+  }
+  .trend-experience .trend-toolbar-copy {
+    order: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    flex: 1 1 auto;
+    gap: 10px;
+    min-width: 0;
+    padding: 28px;
+    margin: 0;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--bg);
+  }
+  .trend-experience .trend-eyebrow {
+    font-size: 15px;
+    white-space: normal;
+    color: var(--mut);
+  }
+  .trend-experience .trend-return-percent {
+    font-size: clamp(42px, 4.5vw, 60px);
+    line-height: 1.05;
+    margin: 5px 0 0;
+  }
+  .trend-experience .trend-return-money {
+    font-size: clamp(20px, 2.2vw, 27px);
+    margin: 0;
+  }
+  .trend-experience .trend-return-unavailable { font-size: 24px; }
+  .trend-experience > .trend-plot,
+  .trend-experience > .trend-empty {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: stretch;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    min-height: 340px;
+  }
+  .trend-experience > .trend-footnote {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 0;
+  }
+}
