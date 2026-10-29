@@ -1185,3 +1185,44 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 .stock-card .stock-stats > div:nth-child(n+3) {
   border-top: 1px solid var(--line);
 }
+
+/* Portfolio activity: compact, readable transaction timeline */
+.activity-section { margin-top: 20px; }
+.activity-top { display:flex;justify-content:space-between;align-items:flex-start;gap:16px; }
+.activity-top .ctitle { margin:0 0 6px; }
+.activity-top .csub { margin:0; }
+.activity-count { white-space:nowrap;padding:7px 12px;border-radius:10px;background:var(--bg);color:var(--mut);font-size:12px;font-weight:700;border:1px solid var(--line); }
+.activity-filters { display:flex;flex-wrap:wrap;gap:7px;margin:23px 0 7px; }
+.activity-filter { border:1px solid transparent;background:transparent;color:var(--mut);font:inherit;font-size:13px;font-weight:700;padding:9px 14px;border-radius:10px;cursor:pointer; }
+.activity-filter:hover { background:var(--bg);color:var(--ink); }
+.activity-filter.selected { background:var(--bg);border-color:var(--line);color:var(--ink); }
+.activity-row { display:flex;align-items:center;gap:15px;padding:18px 3px;border-bottom:1px solid var(--line); }
+.activity-row:last-child { border-bottom:0; }
+.activity-icon { width:43px;height:43px;flex:none;border-radius:13px;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--mut); }
+.activity-icon.buy { background:#e4f6ee;color:#129965; }
+.activity-icon.sell { background:#e8efff;color:#4578dc; }
+.activity-details { min-width:0;flex:1; }
+.activity-row-title { display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;font-weight:650;color:var(--ink); }
+.activity-row-title strong { font-size:15px;font-weight:800; }
+.activity-row-sub { display:flex;align-items:center;gap:13px;flex-wrap:wrap;color:var(--mut);font-size:12px;margin-top:6px; }
+.activity-owner { display:inline-flex;align-items:center;gap:5px; }
+.activity-owner .owner-avatar { width:20px;height:20px; }
+.activity-amount { display:flex;flex-direction:column;align-items:flex-end;gap:5px;white-space:nowrap;text-align:left; }
+.activity-amount strong { font-size:14px;font-weight:750;color:var(--ink); }
+.activity-amount span { font-size:12px;color:var(--mut); }
+.activity-empty { display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:46px 18px;color:var(--mut); }
+.activity-empty strong { color:var(--ink);font-size:15px; }
+.activity-empty span { max-width:430px;font-size:13px;line-height:1.6; }
+.activity-more { display:block;margin:16px auto 0;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:11px;padding:11px 20px;font:inherit;font-weight:700;font-size:13px;cursor:pointer; }
+.activity-more:hover { border-color:var(--mut); }
+:root[data-theme="dark"] .activity-icon.buy { background:#1c4035;color:#6cdda8; }
+:root[data-theme="dark"] .activity-icon.sell { background:#253958;color:#9abaff; }
+@media(max-width:600px) {
+ .activity-row { gap:10px;padding:15px 0; }
+ .activity-icon { width:36px;height:36px;border-radius:11px; }
+ .activity-row-title { gap:6px;font-size:13px; }
+ .activity-row-title strong { font-size:14px; }
+ .activity-amount strong { font-size:12px; }
+ .activity-amount span { font-size:11px; }
+ .activity-filters { margin-top:17px; }
+}
