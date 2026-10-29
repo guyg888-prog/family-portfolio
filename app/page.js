@@ -144,9 +144,9 @@ function PortfolioSummary({ book, isOverview }) {
       <div className="summary-change-label">{label}</div>
       <div className="summary-change-amount" dir="ltr">
         <span className={`summary-change-percent ${tone(amount)}`}>{pct(percent)}</span>
+        <span className="summary-change-money" dir="ltr">{amount > 0 ? "+" : amount < 0 ? "−" : ""}{usd(Math.abs(amount), 2)}</span>
         <span className={`summary-direction ${amount > 0 ? "positive" : amount < 0 ? "negative" : "neutral"}`} aria-hidden="true">{amount > 0 ? <ArrowUpRight size={17} /> : amount < 0 ? <ArrowDownRight size={17} /> : <Activity size={15} />}</span>
       </div>
-      <span className="summary-change-money" dir="ltr">{amount > 0 ? "+" : amount < 0 ? "−" : ""}{usd(Math.abs(amount), 2)}</span>
     </div>
   );
   return (
