@@ -1238,3 +1238,23 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 .trend-return-unavailable { display:block;font-size:clamp(21px,2.6vw,29px);font-weight:750;color:var(--ink);margin:7px 0; }
 .trend-footnote { align-items:flex-start; }
 .trend-footnote-dot { margin-top:5px; }
+
+/* Edge-to-edge circular stock identities: no internal inset or empty frame */
+.stock-logo {
+  border-radius: 50%;
+  padding: 0;
+  border: 1px solid var(--line);
+  overflow: hidden;
+  isolation: isolate;
+}
+.stock-logo img {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+.stock-logo > svg { width: 52%; height: 52%; }
+:root[data-theme="dark"] .stock-logo img { background: #263750; }
