@@ -957,3 +957,27 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
   .page > .card > .csub { margin-bottom: 18px; }
   .page > .investments-section > .investments-heading { margin-bottom: 19px; }
 }
+
+/* Make allocation legend labels and values easier to scan */
+.page .donutwrap-expanded .lrow .nm {
+  font-size: 15px;
+  font-weight: 750;
+}
+.page .donutwrap-expanded .lrow .vl {
+  font-size: 15px;
+  font-weight: 800;
+}
+.page .donutwrap-expanded .lrow .legend-value {
+  font-size: 14px;
+  font-weight: 500;
+}
+.page .donutwrap-expanded .lrow {
+  min-height: 49px;
+  padding: 11px 13px;
+  gap: 9px;
+}
+@media (max-width: 600px) {
+  .page .donutwrap-expanded .lrow .nm,
+  .page .donutwrap-expanded .lrow .vl { font-size: 14px; }
+  .page .donutwrap-expanded .lrow .legend-value { font-size: 13px; }
+}
