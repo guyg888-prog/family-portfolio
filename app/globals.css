@@ -1226,3 +1226,8 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
  .activity-amount span { font-size:11px; }
  .activity-filters { margin-top:17px; }
 }
+
+/* Stock metrics: vertical separators only, no horizontal crossbar */
+.stock-card .stock-stats > div:nth-child(n+3) {
+  border-top: 0;
+}
