@@ -794,16 +794,41 @@ function Gate({ onPick }) {
 
 /* ------------------------------------------------------------------ */
 
-function DashboardSkeleton() {
- return <div className="shell" role="status" aria-label="טוען נתוני תיק" aria-busy="true">
-   <div className="head"><div className="skel skel-head" /><div className="skel skel-head" /></div>
-   <div className="page skeleton-page">
-     <div className="summary-layout"><div className="card skeleton-summary"><div className="skel skel-label" /><div className="skel skel-total" /><div className="skeleton-kpis"><div className="skel skel-kpi" /><div className="skel skel-kpi" /></div></div><div className="card skeleton-cash"><div className="skel skel-label" /><div className="skel skel-total" /></div></div>
-     <div className="card skeleton-panel"><div className="skel skel-label" /><div className="skel skel-chart" /></div>
-     <div className="card skeleton-panel"><div className="skel skel-label" /><div className="skel skel-chart" /></div>
-     <div className="card skeleton-panel"><div className="skel skel-label" /><div className="skeleton-stock-grid">{[0,1,2].map(i=><div key={i} className="skel skel-stock" />)}</div></div>
-   </div>
- </div>;
+function DashboardSkeleton({ overview = false }) {
+  const block = (cls) => <div className={`skel ${cls}`} />;
+  const sectionHeading = (width = "skeleton-title") => <><div className={`skel ${width}`} /><div className="skel skeleton-subtitle" /></>;
+  return <div className="shell" role="status" aria-label="טוען נתוני תיק" aria-busy="true">
+    <div className="head skeleton-header">
+      <div className="skeleton-greeting"><div className="skel skeleton-avatar" /><div><div className="skel skeleton-hello" /><div className="skel skeleton-date" /></div></div>
+      <div className="skeleton-header-actions"><div className="skel skeleton-icon" /><div className="skel skeleton-add" /><div className="skel skeleton-refresh" /><div className="skel skeleton-icon" /></div>
+    </div>
+    <div className="page skeleton-page">
+      <div className="summary-layout">
+        <div className="portfolio-summary skeleton-summary">
+          {block("skeleton-title")}
+          {block("skeleton-balance")}
+          <div className="summary-changes">
+            {[0,1].map(i=><div key={i} className="summary-change skeleton-change">{block("skeleton-change-label")}{block("skeleton-percent")}{block("skeleton-money")}</div>)}
+          </div>
+        </div>
+        <div className="cash-tile skeleton-cash"><div className="skeleton-cash-top">{block("skeleton-cash-icon")}{block("skeleton-cash-label")}</div>{block("skeleton-cash-value")}{block("skeleton-cash-caption")}</div>
+      </div>
+      <div className="card skeleton-trend">{sectionHeading()}{block("skeleton-trend-plot")}</div>
+      {overview && <div className="card skeleton-owner-allocation">{sectionHeading()}{block("skeleton-overview-chart")}</div>}
+      <div className="card skeleton-holdings">{sectionHeading()}<div className="donutwrap-expanded skeleton-donut-layout"><div className="skel skeleton-donut" /><div className="skeleton-legend">{Array.from({length:8},(_,i)=><div key={i} className="skel skeleton-legend-row" />)}</div></div></div>
+      {overview ? <div className="card skeleton-attention">{sectionHeading()}{[0,1,2].map(i=><div key={i} className="skel skeleton-attention-row" />)}</div> :
+      <section className="card investments-section skeleton-investments">
+        <div className="skel skeleton-title" />
+        <div className="stock-grid">{[0,1,2].map(i=><div key={i} className="stock-card skeleton-stock-card">
+          <div className="stock-card-head skeleton-stock-head">{block("skeleton-stock-logo")}{block("skeleton-stock-ticker")}{block("skeleton-stock-price")}</div>
+          <div className="stock-performance skeleton-stock-performance">{[0,1].map(j=><div key={j}>{block("skeleton-change-label")}{block("skeleton-percent")}{block("skeleton-money")}</div>)}</div>
+          <div className="stock-stats skeleton-stock-stats">{[0,1,2,3].map(j=><div key={j}>{block("skeleton-stat-label")}{block("skeleton-stat-value")}</div>)}</div>
+          <div className="stock-history skeleton-stock-history">{block("skeleton-ranges")}{block("skeleton-mini-chart")}</div>
+          <div className="stock-actions skeleton-stock-actions">{[0,1,2].map(j=><div key={j} className="skel skeleton-action" />)}</div>
+        </div>)}</div>
+      </section>}
+    </div>
+  </div>;
 }
 
 export default function Dashboard() {
@@ -1180,12 +1205,12 @@ export default function Dashboard() {
 
   /* ---- render ---- */
 
-  if (!ready) return <DashboardSkeleton />;
+  if (!ready) return <DashboardSkeleton overview={me === "mark" && tab === "overview"} />;
   if (!me) return <Gate onPick={pickMe} />;
-  if (stateLoading) return <DashboardSkeleton />;
+  if (stateLoading) return <DashboardSkeleton overview={me === "mark" && tab === "overview"} />;
   if (tickers.length > 0 && quotesReadyKey !== quotesKey) {
     if (quotesErrorKey === quotesKey) return <div className="gate"><div className="gatebox"><h2>לא הצלחנו לטעון מחירי מניות</h2><p className="hint">כדי לא להציג סכומים לא מדויקים, הנתונים מוסתרים עד שהמחירים יתעדכנו.</p><button className="btn pri" onClick={() => { setQuotesErrorKey(null); refresh(); }}>נסה שוב</button></div></div>;
-    return <DashboardSkeleton />;
+    return <DashboardSkeleton overview={me === "mark" && tab === "overview"} />;
   }
 
   const isOverview = tab === "overview";

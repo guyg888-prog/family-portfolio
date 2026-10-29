@@ -847,3 +847,73 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 :root[data-theme="dark"] textarea::placeholder { color: #879bb7; }
 :root[data-theme="dark"] input:focus-visible,
 :root[data-theme="dark"] button:focus-visible { outline: 2px solid #8bbaff; outline-offset: 2px; }
+
+/* Layout-faithful loading placeholders: preserve real component geometry */
+.skeleton-page .skel { flex-shrink: 0; }
+.skeleton-header { min-height: 86px; }
+.skeleton-greeting,.skeleton-header-actions,.skeleton-cash-top { display:flex;align-items:center;gap:10px; }
+.skeleton-header-actions { gap:8px; }
+.skeleton-avatar { width:29px;height:29px;border-radius:50%; }
+.skeleton-hello { width:125px;height:21px;margin-bottom:7px; }
+.skeleton-date { width:96px;height:13px; }
+.skeleton-icon { width:44px;height:44px;border-radius:14px; }
+.skeleton-add { width:150px;height:44px;border-radius:12px; }
+.skeleton-refresh { width:178px;height:48px;border-radius:14px; }
+.skeleton-summary { min-height:0; }
+.skeleton-title { width:clamp(130px,22%,205px);height:26px;margin-bottom:14px; }
+.skeleton-balance { width:min(70%,365px);height:70px;margin:12px 0 26px; }
+.skeleton-change { min-height:105px; }
+.skeleton-change-label { width:105px;height:17px;margin-bottom:12px; }
+.skeleton-percent { width:115px;height:30px;margin-bottom:8px; }
+.skeleton-money { width:92px;height:17px; }
+.skeleton-cash { min-height:0;justify-content:space-between; }
+.skeleton-cash-icon { width:45px;height:45px;border-radius:14px; }
+.skeleton-cash-label { width:115px;height:18px; }
+.skeleton-cash-value { width:160px;max-width:100%;height:33px; }
+.skeleton-cash-caption { width:95px;height:13px; }
+.skeleton-subtitle { width:min(70%,320px);height:15px;margin:0 0 18px; }
+.skeleton-trend-plot { width:100%;height:225px; }
+.skeleton-overview-chart { width:100%;height:150px; }
+.skeleton-donut-layout { min-height:450px; }
+.skeleton-donut { width:min(100%,450px);height:450px;border-radius:50%;justify-self:center; }
+.skeleton-legend { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;width:100%; }
+.skeleton-legend-row { height:43px;border-radius:13px; }
+.skeleton-attention-row { height:60px;margin-bottom:10px; }
+.skeleton-investments .skeleton-title { margin-bottom:20px; }
+.skeleton-stock-card { overflow:hidden; }
+.skeleton-stock-head { display:flex;align-items:center;gap:10px;min-height:94px; }
+.skeleton-stock-logo { width:48px;height:48px;border-radius:0; }
+.skeleton-stock-ticker { width:65px;height:26px; }
+.skeleton-stock-price { width:100px;height:24px;margin-inline-start:auto; }
+.skeleton-stock-performance { display:grid;grid-template-columns:repeat(2,minmax(0,1fr)); }
+.skeleton-stock-performance .skeleton-percent { width:min(90%,105px);height:27px; }
+.skeleton-stock-stats { display:grid;grid-template-columns:repeat(2,minmax(0,1fr)); }
+.skeleton-stat-label { width:82px;max-width:90%;height:13px;margin-bottom:9px; }
+.skeleton-stat-value { width:100px;max-width:90%;height:20px; }
+.skeleton-stock-history .skeleton-ranges { width:100%;height:24px;margin-bottom:10px; }
+.skeleton-mini-chart { width:100%;height:48px; }
+.skeleton-stock-actions { padding-top:13px; }
+.skeleton-action { flex:1;height:36px;border-radius:11px; }
+@media(max-width:960px) {
+ .skeleton-donut-layout { min-height:0; }
+ .skeleton-donut { width:min(100%,365px);height:365px; }
+ .skeleton-legend { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:700px) {
+ .skeleton-refresh { width:44px;height:44px; }
+ .skeleton-add { width:44px;height:44px; }
+ .skeleton-header-actions { gap:5px; }
+ .skeleton-header { min-height:64px; }
+ .skeleton-balance { height:50px; }
+ .skeleton-trend-plot { height:190px; }
+ .skeleton-donut { width:min(100%,295px);height:295px; }
+ .skeleton-legend { grid-template-columns:1fr; }
+ .skeleton-stock-head { min-height:80px; }
+ .skeleton-mini-chart { height:54px; }
+}
+@media(max-width:420px) {
+ .skeleton-hello { width:72px; }
+ .skeleton-date { width:65px; }
+ .skeleton-icon { width:38px;height:38px; }
+ .skeleton-stock-price { width:80px; }
+}
