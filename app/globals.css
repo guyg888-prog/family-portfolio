@@ -757,3 +757,21 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 :root[data-theme="dark"] .page .portfolio-summary .summary-title { color: var(--ink); }
 :root[data-theme="dark"] .refresh-status,
 :root[data-theme="dark"] .date { color: var(--mut); }
+
+/* Finery-inspired restrained performance indicators */
+.stock-performance strong .stock-pct {
+  display: flex; align-items: center; justify-content: flex-end; gap: 7px;
+  white-space: nowrap;
+}
+.stock-performance strong .stock-pct::before { content: none; }
+.stock-performance .performance-badge {
+  width: 25px; height: 23px; border-radius: 7px;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex: none;
+}
+.stock-performance .performance-badge.positive { color: #159763; background: #e3f5eb; }
+.stock-performance .performance-badge.negative { color: #d34d49; background: #fde9e8; }
+.stock-performance .performance-badge.neutral { color: #687b97; background: #edf1f7; }
+:root[data-theme="dark"] .stock-performance .performance-badge.positive { color: #69e5ad; background: #204b3c; }
+:root[data-theme="dark"] .stock-performance .performance-badge.negative { color: #ffa5a0; background: #513037; }
+:root[data-theme="dark"] .stock-performance .performance-badge.neutral { color: #b5c3d6; background: #304056; }
