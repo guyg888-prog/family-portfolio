@@ -936,7 +936,7 @@ export default function Dashboard() {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ me, data: next }),
-        }).then((res) => { if (!res.ok) throw new Error("save failed"); notify("השינויים נשמרו בהצלחה"); }).catch(() => { setErr("השינוי לא נשמר."); notify("לא הצלחנו לשמור את השינוי", "error"); });
+        }).then(async (res) => { if (!res.ok) throw new Error("save failed"); const result = await res.json(); if (result.activity?.length) setActivity(prev => [...result.activity.slice().reverse(), ...prev].slice(0, 250)); notify("השינויים נשמרו בהצלחה"); }).catch(() => { setErr("השינוי לא נשמר."); notify("לא הצלחנו לשמור את השינוי", "error"); });
       }, 600);
     },
     [me, notify]
