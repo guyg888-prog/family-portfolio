@@ -1258,3 +1258,13 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 }
 .stock-logo > svg { width: 52%; height: 52%; }
 :root[data-theme="dark"] .stock-logo img { background: #263750; }
+
+/* Larger holdings allocation donut on desktop */
+@media (min-width: 1000px) {
+  .donutwrap-expanded { grid-template-columns: minmax(470px, 54%) minmax(0, 1fr); gap: 28px; }
+  .donutwrap-expanded .donut { width: 100%; max-width: 560px; height: 530px; }
+  .donutwrap-expanded .donutmid b { font-size: 44px; }
+}
+@media (min-width: 700px) and (max-width: 999px) {
+  .donutwrap-expanded .donut { width: 100%; max-width: 430px; height: 410px; }
+}
