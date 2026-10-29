@@ -1585,3 +1585,16 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
     align-self: start;
   }
 }
+
+/* Swap historical chart and controls on desktop, retaining bounded chart height */
+@media (min-width: 960px) {
+  .trend-experience > .trend-toolbar {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .trend-experience > .trend-plot,
+  .trend-experience > .trend-empty {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}
