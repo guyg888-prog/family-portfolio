@@ -1557,3 +1557,31 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
   background: var(--line);
   pointer-events: none;
 }
+
+/* HOTFIX: never size a Recharts container from its own grid row's percentage height */
+@media (min-width: 960px) {
+  .trend-experience {
+    grid-template-rows: 410px auto;
+    min-width: 0;
+  }
+  .trend-experience > .trend-plot {
+    position: relative;
+    top: -70px;
+    height: 410px;
+    min-height: 0;
+    max-height: 410px;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    align-self: start;
+  }
+  .trend-experience > .trend-empty {
+    position: relative;
+    top: -70px;
+    height: 410px;
+    min-height: 0;
+    max-height: 410px;
+    overflow: hidden;
+    align-self: start;
+  }
+}
