@@ -32,6 +32,8 @@ import {
   CircleCheck,
   AlertTriangle,
   ChartNoAxesCombined,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -816,6 +818,21 @@ export default function Dashboard() {
     window.addEventListener("scroll", updateHeader, { passive: true });
     return () => window.removeEventListener("scroll", updateHeader);
   }, []);
+  const [theme, setTheme] = useState("light");
+  useEffect(() => {
+    let saved = "light";
+    try { saved = window.localStorage.getItem("family-portfolio-theme") || "light"; } catch (e) {}
+    setTheme(saved === "dark" ? "dark" : "light");
+  }, []);
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+  }, [theme]);
+  const toggleTheme = () => setTheme(current => {
+    const next = current === "dark" ? "light" : "dark";
+    try { window.localStorage.setItem("family-portfolio-theme", next); } catch (e) {}
+    return next;
+  });
   const [ready, setReady] = useState(false);
   const [stateLoading, setStateLoading] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -1188,6 +1205,9 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="headbtns">
+          <button type="button" className="icb theme-toggle" onClick={toggleTheme} aria-label={theme === "dark" ? "מעבר למצב בהיר" : "מעבר למצב כהה"} title={theme === "dark" ? "מצב בהיר" : "מצב כהה"} aria-pressed={theme === "dark"}>
+            {theme === "dark" ? <Sun size={19} /> : <Moon size={19} />}
+          </button>
           {editableOwners.length > 0 && <button className="btn pri header-add" onClick={() => setModal({ type: "add", owner: isOverview ? editableOwners[0].id : tab })}><Plus size={17} /> <span>הוספת פוזיציה</span></button>}
           <div className="refresh-chip" title="המחירים מתרעננים אוטומטית בכל דקה"><div className="refresh-status"><span>{loading ? "מעדכן מחירים…" : lastUpdated ? `עודכן ב-${lastUpdated.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}` : "ממתין לעדכון"}</span><small><span className="refresh-dot" /> אוטומטי · כל דקה</small></div><button className="refresh-chip-button" onClick={refresh} disabled={loading} aria-label="רענון מחירים"><RefreshCw size={18} className={loading ? "spin" : ""} /></button></div>
           <button className="icb" onClick={signOut} aria-label="החלפת משתמש">
