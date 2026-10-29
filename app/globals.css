@@ -1315,3 +1315,76 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
     margin-top: 0;
   }
 }
+
+/* History: larger range tabs on the right, period change beside them on the left */
+@media (min-width: 960px) {
+  .trend-experience {
+    display: grid;
+    grid-template-columns: minmax(0,1fr);
+    grid-template-rows: auto auto auto;
+    row-gap: 18px;
+  }
+  .trend-experience > .trend-toolbar {
+    display: flex;
+    grid-column: 1;
+    grid-row: 1;
+    flex-direction: row;
+    direction: rtl;
+    justify-content: space-between;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+    margin: 0;
+  }
+  .trend-experience .trend-ranges {
+    order: 0;
+    flex: 0 0 auto;
+    display: flex;
+    direction: rtl;
+    width: max-content;
+    max-width: 100%;
+    margin: 0;
+    padding: 6px;
+    gap: 5px;
+    grid-column: auto;
+    grid-row: auto;
+    justify-self: auto;
+  }
+  .trend-experience .trend-range {
+    font-size: 15px;
+    padding: 13px 18px;
+    border-radius: 11px;
+  }
+  .trend-experience .trend-toolbar-copy {
+    order: 1;
+    flex: 1 1 220px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 13px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    border-radius: 0;
+    min-width: 0;
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .trend-experience .trend-eyebrow { font-size: 13px; white-space: nowrap; }
+  .trend-experience .trend-return-percent { font-size: 28px; margin: 0; white-space: nowrap; }
+  .trend-experience .trend-return-money { font-size: 16px; margin: 0; white-space: nowrap; }
+  .trend-experience > .trend-plot,
+  .trend-experience > .trend-empty {
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+    min-width: 0;
+  }
+  .trend-experience > .trend-plot { height: 350px; }
+  .trend-experience > .trend-footnote { grid-column: 1; grid-row: 3; }
+}
+@media (max-width: 959px) {
+  .trend-experience .trend-ranges { direction: rtl; }
+  .trend-experience .trend-range { font-size: 13px; padding: 10px 13px; }
+}
