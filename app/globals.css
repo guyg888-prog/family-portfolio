@@ -1617,9 +1617,10 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
     aspect-ratio: 1;
     height: auto;
     align-self: start;
+    margin-top: 68px;
   }
   .card > .donutwrap-expanded .legend {
-    padding-top: 68px;
+    padding-top: 0;
     align-self: start;
     row-gap: 12px;
   }
