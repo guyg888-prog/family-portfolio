@@ -1149,3 +1149,18 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
   .trend-ranges { gap: 2px; padding: 3px; }
   .trend-range { padding: 8px 7px; font-size: 11px; }
 }
+
+/* Cash balance: improve readability without increasing card bulk */
+.cash-tile .cash-tile-title > span { font-size: 16px; font-weight: 720; line-height: 1.4; }
+.cash-tile .cash-tile-content > strong { font-size: clamp(28px, 2.8vw, 34px); line-height: 1.2; }
+.cash-tile .cash-tile-content > small { font-size: 13px; line-height: 1.4; }
+/* Account performance: clear red/green percentages and no dividing line */
+.portfolio-hero .summary-change-percent.up { color: var(--up); }
+.portfolio-hero .summary-change-percent.down { color: var(--down); }
+.portfolio-hero .summary-change-percent.flat { color: var(--mut); }
+.portfolio-hero .summary-total { margin-bottom: 23px; }
+@media (max-width: 700px) {
+  .cash-tile .cash-tile-title > span { font-size: 15px; }
+  .cash-tile .cash-tile-content > strong { font-size: 28px; }
+  .cash-tile .cash-tile-content > small { font-size: 12px; }
+}
