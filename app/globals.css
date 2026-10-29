@@ -1588,6 +1588,7 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 
 /* Swap historical chart and controls on desktop, retaining bounded chart height */
 @media (min-width: 960px) {
+  .trend-experience { grid-template-columns: minmax(0, 1fr) minmax(300px, 34%); }
   .trend-experience > .trend-toolbar {
     grid-column: 2;
     grid-row: 1;
