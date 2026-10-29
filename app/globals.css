@@ -1599,3 +1599,32 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
     grid-row: 1;
   }
 }
+
+/* Holdings distribution: lift the visual to the title line, with more breathing room */
+@media (min-width: 1000px) {
+  .card:has(> .donutwrap-expanded) { overflow: hidden; }
+  .card:has(> .donutwrap-expanded) > .ctitle,
+  .card:has(> .donutwrap-expanded) > .csub { position: relative; z-index: 1; }
+  .card > .donutwrap-expanded {
+    margin-top: -54px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: clamp(18px, 2.2vw, 30px);
+  }
+  .card > .donutwrap-expanded .donut {
+    width: min(100%, 550px);
+    max-width: 550px;
+    aspect-ratio: 1;
+    height: auto;
+    align-self: start;
+  }
+  .card > .donutwrap-expanded .legend {
+    padding-top: 68px;
+    align-self: start;
+    row-gap: 12px;
+  }
+  .card > .donutwrap-expanded .lrow {
+    min-height: 55px;
+    padding: 14px 13px;
+  }
+}
