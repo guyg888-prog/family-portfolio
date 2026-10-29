@@ -124,7 +124,6 @@ function PortfolioSummary({ book, isOverview }) {
       <div className="portfolio-hero-eyebrow"><span className="portfolio-hero-mark" /> סקירת תיק השקעות <span className="portfolio-hero-live">USD</span></div>
       <h1 className="summary-title">{isOverview ? "שווי התיקים הכולל" : "מצב החשבון שלי"}</h1>
       <div className="summary-total" dir="ltr">{usd(book.total, 0)}</div>
-      <div className="portfolio-hero-divider" />
       <div className="summary-changes">
         {change("שינוי יומי", book.day, book.dayPct)}
         {change("שינוי ממועד הקנייה", purchaseChange, purchasePct)}
