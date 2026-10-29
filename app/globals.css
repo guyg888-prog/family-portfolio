@@ -981,3 +981,83 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
   .page .donutwrap-expanded .lrow .vl { font-size: 14px; }
   .page .donutwrap-expanded .lrow .legend-value { font-size: 13px; }
 }
+
+/* Delta-inspired dashboard refinement: clearer hierarchy, refined surfaces and restrained accents */
+:root {
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --ink: #151d33;
+  --navy: #17223b;
+  --mut: #718099;
+  --line: #e7ecf3;
+  --shadow: 0 4px 24px rgba(22,37,69,.045);
+}
+.page { max-width: 1280px; }
+.page > .card,
+.page > .investments-section,
+.portfolio-summary,
+.cash-tile {
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.page > .card,
+.page > .investments-section { border-radius: 22px; }
+.page .card > .ctitle,
+.page .investments-section > .investments-heading {
+  font-size: 21px;
+  font-weight: 750;
+  letter-spacing: -.025em;
+}
+.page .card > .csub { color: var(--mut); }
+.portfolio-summary { border-radius: 22px; }
+.portfolio-summary .summary-total { letter-spacing: -.045em; font-variant-numeric: tabular-nums; }
+.portfolio-summary .summary-change {
+  border-radius: 15px;
+  transition: background .2s ease, transform .2s ease;
+}
+.portfolio-summary .summary-change:hover { transform: translateY(-1px); }
+.cash-tile { border-radius: 22px; }
+.donutwrap-expanded .lrow {
+  border-radius: 13px;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+.donutwrap-expanded .lrow:hover { transform: translateY(-1px); }
+.stock-card {
+  border-radius: 18px;
+  overflow: hidden;
+  transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease;
+}
+.stock-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(20,42,77,.09);
+}
+.stock-card .stock-card-head { border-bottom: 1px solid var(--line); }
+.stock-performance .performance-badge { border-radius: 8px; }
+.stock-performance strong .stock-pct { letter-spacing: -.035em; }
+.stock-stats { border-radius: 12px; }
+.stock-actions { gap: 8px; }
+.stock-actions .btn { transition: background .2s ease, border-color .2s ease, transform .2s ease; }
+.stock-actions .btn:active { transform: scale(.98); }
+:root[data-theme="dark"] {
+  --bg: #0c111c;
+  --card: #151d2b;
+  --ink: #edf2fa;
+  --navy: #e6eefc;
+  --mut: #9eacc3;
+  --line: #283549;
+  --shadow: 0 8px 26px rgba(0,0,0,.16);
+}
+:root[data-theme="dark"] .portfolio-summary,
+:root[data-theme="dark"] .cash-tile,
+:root[data-theme="dark"] .page > .card,
+:root[data-theme="dark"] .page > .investments-section { border-color: var(--line); }
+:root[data-theme="dark"] .stock-card:hover { box-shadow: 0 12px 32px rgba(0,0,0,.3); }
+:root[data-theme="dark"] .stock-card .stock-card-head { border-bottom-color: #34465f; }
+@media (max-width:700px) {
+ .page > .card,.page > .investments-section { border-radius: 18px; }
+ .stock-card:hover { transform: none; }
+}
+@media (prefers-reduced-motion:reduce) {
+ .stock-card,.stock-actions .btn,.portfolio-summary .summary-change,.donutwrap-expanded .lrow { transition: none; }
+ .stock-card:hover,.portfolio-summary .summary-change:hover,.donutwrap-expanded .lrow:hover { transform: none; }
+}
