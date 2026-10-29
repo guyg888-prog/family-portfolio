@@ -847,6 +847,7 @@ export default function Dashboard() {
   const toastTimer = useRef(null);
   const refreshBusy = useRef(false);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [quotesReadyKey, setQuotesReadyKey] = useState(null);
   const notify = useCallback((message, kind = "success") => {
     clearTimeout(toastTimer.current);
     setToast({ message, kind });
@@ -914,6 +915,8 @@ export default function Dashboard() {
     return [...s];
   }, [data, visible]);
 
+  const quotesKey = `${me || ""}:${[...tickers].sort().join(",")}`;
+
   const refresh = useCallback(async () => {
     if (!tickers.length || refreshBusy.current) return;
     refreshBusy.current = true;
@@ -949,6 +952,7 @@ export default function Dashboard() {
     } finally {
       refreshBusy.current = false;
       setLoading(false);
+      setQuotesReadyKey(`${me || ""}:${[...tickers].sort().join(",")}`);
     }
   }, [tickers, data, visible, me]);
 
@@ -959,9 +963,9 @@ export default function Dashboard() {
   }, [me, tickers.length, refresh]);
 
   useEffect(() => {
-    if (me && tickers.length && !lastUpdated) refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [me, tickers.length]);
+    if (!me || stateLoading || !tickers.length || quotesReadyKey === quotesKey) return;
+    refresh();
+  }, [me, stateLoading, quotesKey, quotesReadyKey, refresh, tickers.length]);
 
   const runResearch = useCallback(async (ticker) => {
     setResearch((s) => ({ ...s, [ticker]: { loading: true } }));
@@ -1174,7 +1178,7 @@ export default function Dashboard() {
 
   if (!ready) return <DashboardSkeleton />;
   if (!me) return <Gate onPick={pickMe} />;
-  if (stateLoading) return <DashboardSkeleton />;
+  if (stateLoading || (tickers.length > 0 && quotesReadyKey !== quotesKey)) return <DashboardSkeleton />;
 
   const isOverview = tab === "overview";
   const bk = isOverview ? grand : byOwner[tab] || grand;
