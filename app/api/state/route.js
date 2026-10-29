@@ -4,6 +4,41 @@ export const dynamic = "force-dynamic";
 
 const IDS = ["mark", "ron", "guy"];
 
+const ACTIVITY_LIMIT = 250;
+const asNumber = (v) => Number(String(v ?? "").replace(/[^\\d.-]/g, "")) || 0;
+function detectActivity(previous, next, actor) {
+  const events = [];
+  const stamp = new Date().toISOString();
+  const push = (owner, type, ticker, quantity, price, amount) => events.push({
+    id: crypto.randomUUID(), at: stamp, owner, actor, type,
+    ...(ticker ? { ticker } : {}),
+    ...(quantity !== undefined ? { quantity } : {}),
+    ...(price !== undefined ? { price } : {}),
+    ...(amount !== undefined ? { amount } : {}),
+  });
+  for (const owner of IDS) {
+    const before = new Map((previous.positions?.[owner] || []).map(p => [p.id,p]));
+    const after = new Map((next.positions?.[owner] || []).map(p => [p.id,p]));
+    for (const [id,p] of after) {
+      const old = before.get(id);
+      if (!old) { push(owner,"add",p.ticker,Number(p.qty),Number(p.cost)); continue; }
+      const diff = Number(p.qty) - Number(old.qty);
+      if (diff > 0.0000001) push(owner,"buy",p.ticker,diff,Number(p.cost));
+      else if (diff < -0.0000001) push(owner,"sell",p.ticker,-diff,undefined);
+      else if (Number(p.cost) !== Number(old.cost) || p.ticker !== old.ticker) push(owner,"edit",p.ticker);
+      if (JSON.stringify(old.call ?? null) !== JSON.stringify(p.call ?? null)) push(owner,"call",p.ticker);
+    }
+    for (const [id,p] of before) if (!after.has(id)) push(owner,"remove",p.ticker);
+    for (const field of ["cash","deposits"]) {
+      const oldValue = asNumber(previous[field]?.[owner]);
+      const newValue = asNumber(next[field]?.[owner]);
+      if (oldValue !== newValue) push(owner,field,undefined,undefined,undefined,newValue-oldValue);
+    }
+  }
+  return events;
+}
+
+
 /* Ron and Guy never receive each other's data. The filtering happens here,
    on the server, so a brother's browser never holds the other's numbers. */
 function scope(data, who) {
@@ -24,14 +59,16 @@ function scopeHistory(history, who) {
 export async function GET(req) {
   try {
     const who = new URL(req.url).searchParams.get("me");
-    const [data, history] = await Promise.all([
+    const [data, history, activity] = await Promise.all([
       getKey("state", EMPTY_STATE),
       getKey("history", []),
+      getKey("activity", []),
     ]);
     if (!IDS.includes(who)) return Response.json({ data: EMPTY_STATE, history: [] });
     return Response.json({
       data: scope({ ...EMPTY_STATE, ...data }, who),
       history: scopeHistory(history, who),
+      activity: who === "mark" ? activity : activity.filter(event => event.owner === who),
     });
   } catch (e) {
     return Response.json({ error: "db_unavailable" }, { status: 500 });
@@ -72,7 +109,12 @@ export async function PUT(req) {
           },
         };
       }
+      const events = detectActivity(current, next, who);
       await setKey("state", next);
+      if (events.length) {
+        const existing = await getKey("activity", []);
+        await setKey("activity", [...events.reverse(), ...existing].slice(0, ACTIVITY_LIMIT));
+      }
     }
 
     if (body.historyPoint && body.historyPoint.d) {
