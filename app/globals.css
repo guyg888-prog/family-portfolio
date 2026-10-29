@@ -709,3 +709,6 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
   .page .investments-section > .investments-heading { font-size: 19px; }
   .page .portfolio-summary .summary-title { font-size: 22px; }
 }
+
+/* Divider above stock card action buttons */
+.stock-card .stock-actions { border-top: 1px solid #e3eaf3; padding-top: 13px; margin-top: 13px; }
