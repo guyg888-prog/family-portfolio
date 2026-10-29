@@ -917,3 +917,15 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
  .skeleton-icon { width:38px;height:38px; }
  .skeleton-stock-price { width:80px; }
 }
+
+/* One direction icon per performance metric, with the percentage as the focus */
+.stock-performance .stock-change-label svg { display: none; }
+.stock-performance .stock-pct::before,
+.stock-performance .up .stock-pct::before,
+.stock-performance .down .stock-pct::before { content: none !important; display: none !important; }
+.stock-performance strong .stock-pct { font-size: 30px; line-height: 1.16; gap: 8px; }
+.stock-performance .performance-badge { width: 27px; height: 25px; }
+@media (max-width: 600px) { .stock-performance strong .stock-pct { font-size: 27px; } }
+/* The logo tile follows the dark palette rather than remaining white */
+:root[data-theme="dark"] .stock-logo { background: #263750; border-color: #405573; }
+:root[data-theme="dark"] .stock-logo img { background: #263750; }
