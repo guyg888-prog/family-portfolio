@@ -1586,50 +1586,6 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
   }
 }
 
-/* Swap historical chart and controls on desktop, retaining bounded chart height */
-@media (min-width: 960px) {
-  .trend-experience { grid-template-columns: minmax(0, 1fr) minmax(300px, 34%); }
-  .trend-experience > .trend-toolbar {
-    grid-column: 2;
-    grid-row: 1;
-  }
-  .trend-experience > .trend-plot,
-  .trend-experience > .trend-empty {
-    grid-column: 1;
-    grid-row: 1;
-  }
-}
-
-/* Holdings distribution: lift the visual to the title line, with more breathing room */
-@media (min-width: 1000px) {
-  .card:has(> .donutwrap-expanded) { overflow: hidden; }
-  .card:has(> .donutwrap-expanded) > .ctitle,
-  .card:has(> .donutwrap-expanded) > .csub { position: relative; z-index: 1; }
-  .card > .donutwrap-expanded {
-    margin-top: -54px;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: start;
-    gap: clamp(18px, 2.2vw, 30px);
-  }
-  .card > .donutwrap-expanded .donut {
-    width: min(100%, 550px);
-    max-width: 550px;
-    aspect-ratio: 1;
-    height: auto;
-    align-self: start;
-    margin-top: 68px;
-  }
-  .card > .donutwrap-expanded .legend {
-    padding-top: 0;
-    align-self: start;
-    row-gap: 12px;
-  }
-  .card > .donutwrap-expanded .lrow {
-    min-height: 55px;
-    padding: 14px 13px;
-  }
-}
-
 /* Keep dollar and percentage movements on one line in summary cards */
 .summary-change-amount {
   display: flex;
