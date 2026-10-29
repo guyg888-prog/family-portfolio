@@ -848,6 +848,7 @@ export default function Dashboard() {
   const refreshBusy = useRef(false);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [quotesReadyKey, setQuotesReadyKey] = useState(null);
+  const [quotesErrorKey, setQuotesErrorKey] = useState(null);
   const notify = useCallback((message, kind = "success") => {
     clearTimeout(toastTimer.current);
     setToast({ message, kind });
@@ -922,6 +923,7 @@ export default function Dashboard() {
     refreshBusy.current = true;
     setLoading(true);
     setErr(null);
+    setQuotesErrorKey(null);
     try {
       const res = await fetch("/api/quotes", {
         method: "POST",
@@ -931,6 +933,7 @@ export default function Dashboard() {
       if (!res.ok) throw new Error();
       const q = await res.json();
       setQuotes((p) => ({ ...p, ...q }));
+      setQuotesReadyKey(`${me || ""}:${[...tickers].sort().join(",")}`);
       const now = new Date();
       setLastUpdated(now);
 
@@ -949,10 +952,10 @@ export default function Dashboard() {
       }).catch(() => {});
     } catch (e) {
       setErr("לא הצלחתי למשוך מחירים כרגע.");
+      setQuotesErrorKey(`${me || ""}:${[...tickers].sort().join(",")}`);
     } finally {
       refreshBusy.current = false;
       setLoading(false);
-      setQuotesReadyKey(`${me || ""}:${[...tickers].sort().join(",")}`);
     }
   }, [tickers, data, visible, me]);
 
@@ -963,9 +966,9 @@ export default function Dashboard() {
   }, [me, tickers.length, refresh]);
 
   useEffect(() => {
-    if (!me || stateLoading || !tickers.length || quotesReadyKey === quotesKey) return;
+    if (!me || stateLoading || !tickers.length || (quotesReadyKey === quotesKey || quotesErrorKey === quotesKey)) return;
     refresh();
-  }, [me, stateLoading, quotesKey, quotesReadyKey, refresh, tickers.length]);
+  }, [me, stateLoading, quotesKey, quotesReadyKey, quotesErrorKey, refresh, tickers.length]);
 
   const runResearch = useCallback(async (ticker) => {
     setResearch((s) => ({ ...s, [ticker]: { loading: true } }));
@@ -1178,7 +1181,11 @@ export default function Dashboard() {
 
   if (!ready) return <DashboardSkeleton />;
   if (!me) return <Gate onPick={pickMe} />;
-  if (stateLoading || (tickers.length > 0 && quotesReadyKey !== quotesKey)) return <DashboardSkeleton />;
+  if (stateLoading) return <DashboardSkeleton />;
+  if (tickers.length > 0 && quotesReadyKey !== quotesKey) {
+    if (quotesErrorKey === quotesKey) return <div className="gate"><div className="gatebox"><h2>לא הצלחנו לטעון מחירי מניות</h2><p className="hint">כדי לא להציג סכומים לא מדויקים, הנתונים מוסתרים עד שהמחירים יתעדכנו.</p><button className="btn pri" onClick={() => { setQuotesErrorKey(null); refresh(); }}>נסה שוב</button></div></div>;
+    return <DashboardSkeleton />;
+  }
 
   const isOverview = tab === "overview";
   const bk = isOverview ? grand : byOwner[tab] || grand;
