@@ -220,7 +220,7 @@ function Donut({ slices, centerValue, centerLabel, expanded = false }) {
       </div>
       <div className="legend">
         {slices.map((s, i) => (
-          <div className={"lrow" + (active === i ? " lrow-active" : "")} key={i} onMouseEnter={() => setActive(i)} onMouseLeave={() => setActive(null)}>
+          <div className={"lrow" + (active === i ? " lrow-active" : active !== null ? " lrow-muted" : "")} key={i} onMouseEnter={() => setActive(i)} onMouseLeave={() => setActive(null)}>
             <i className="dot" style={{ background: s.color }} />
             <span className="nm">{s.name}</span>
             {expanded && <span className="legend-value" dir="ltr">{usd(s.value, 0)}</span>}

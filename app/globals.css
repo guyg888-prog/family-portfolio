@@ -1478,3 +1478,39 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
     margin-top: 0;
   }
 }
+
+/* Balanced 50/50 allocation layout: preserve the large donut without squeezing the legend */
+@media (min-width: 1000px) {
+  .donutwrap-expanded {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(18px, 2.2vw, 30px);
+    align-items: center;
+  }
+  .donutwrap-expanded .donut {
+    width: min(100%, 530px);
+    height: auto;
+    aspect-ratio: 1;
+    max-width: none;
+    justify-self: center;
+    min-width: 0;
+  }
+  .donutwrap-expanded .legend {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    justify-self: stretch;
+  }
+}
+.donutwrap-expanded .lrow {
+  transition: opacity .2s ease, background-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.donutwrap-expanded .lrow-muted {
+  opacity: .17;
+  transform: none;
+  box-shadow: none;
+}
+.donutwrap-expanded .lrow-active { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .donutwrap-expanded .lrow { transition: none; }
+}
