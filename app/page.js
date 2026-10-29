@@ -236,7 +236,7 @@ function TrendChart({ history, keys }) {
   const [range, setRange] = useState("ALL");
   const allData = useMemo(() => history
     .map(h => ({ timestamp: new Date(h.d).getTime(), label: dayLabel(h.d), total: keys.reduce((sum, key) => sum + (Number(h[key]) || 0), 0) }))
-    .filter(point => Number.isFinite(point.timestamp) && Number.isFinite(point.total))
+    .filter(point => Number.isFinite(point.timestamp) && Number.isFinite(point.total) && point.total > 0)
     .sort((a,b) => a.timestamp - b.timestamp), [history, keys]);
   const ranges = [{id:"7D",label:"7 ימים",days:7},{id:"1M",label:"חודש",days:30},{id:"3M",label:"3 חודשים",days:90},{id:"1Y",label:"שנה",days:365},{id:"ALL",label:"הכול",days:null}];
   const latest = allData[allData.length - 1];
@@ -244,12 +244,19 @@ function TrendChart({ history, keys }) {
   const first = data[0], last = data[data.length - 1];
   const delta = data.length > 1 ? last.total - first.total : null;
   const deltaPct = delta !== null && first.total !== 0 ? delta / Math.abs(first.total) * 100 : null;
+  const snapshotTime = last ? new Date(last.timestamp).toLocaleString("he-IL",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}) : null;
   return (
     <div className="trend-experience">
       <div className="trend-toolbar">
-        <div className="trend-toolbar-copy"><span className="trend-eyebrow">התפתחות שווי התיק</span>
-          <strong dir="ltr" className="trend-current">{last ? usd(last.total,0) : "—"}</strong>
-          <div className="trend-change-line">{delta !== null && deltaPct !== null ? <span className={`trend-period-change ${tone(delta)}`} dir="ltr">{delta > 0 ? "+" : ""}{usd(delta,0)} <span>({pct(deltaPct)})</span></span> : <span className="trend-period-note">אין מספיק נקודות להשוואה בטווח הזה</span>}</div>
+        <div className="trend-toolbar-copy">
+          <span className="trend-eyebrow">שינוי בשווי בתקופה הנבחרת</span>
+          {delta !== null && deltaPct !== null ? <>
+            <strong dir="ltr" className={`trend-return-percent ${tone(delta)}`}>{pct(deltaPct)}</strong>
+            <span className={`trend-return-money ${tone(delta)}`} dir="ltr">{delta > 0 ? "+" : delta < 0 ? "−" : ""}{usd(Math.abs(delta),0)}</span>
+          </> : <>
+            <strong className="trend-return-unavailable">אין מספיק נתונים</strong>
+            <span className="trend-period-note">בחר טווח ארוך יותר כדי לראות שינוי בשווי.</span>
+          </>}
         </div>
         <div className="trend-ranges" role="group" aria-label="טווח תצוגת גרף">
           {ranges.map(r=><button key={r.id} type="button" className={`trend-range ${range===r.id?"active":""}`} aria-pressed={range===r.id} onClick={()=>setRange(r.id)}>{r.label}</button>)}
@@ -267,7 +274,7 @@ function TrendChart({ history, keys }) {
           </AreaChart>
         </ResponsiveContainer>
       </div>}
-      <div className="trend-footnote"><span className="trend-footnote-dot" /> נתוני הגרף מבוססים על תצלומי התיק שנשמרו, ולא על מחירי שוק היסטוריים רציפים.</div>
+      <div className="trend-footnote"><span className="trend-footnote-dot" /><span>{snapshotTime ? `תצלום אחרון: ${snapshotTime}` : "עדיין אין תצלומים שמורים"} · שינוי בשווי כולל גם השפעות של הפקדות ומשיכות; הוא אינו תשואה מנוטרלת תזרימים.</span></div>
     </div>
   );
 }
@@ -1279,7 +1286,7 @@ export default function Dashboard() {
 
         <div className="card trend-section">
           <div className="ctitle">שווי לאורך זמן</div>
-          <div className="csub">נבנה מתצלום שנשמר בכל רענון. הפקדות אינן נספרות כרווח.</div>
+          <div className="csub">ההתפתחות ההיסטורית של שווי התיק, לפי תצלומים שנשמרו.</div>
           <TrendChart history={history} keys={chartKeys} />
         </div>
 

@@ -1231,3 +1231,10 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 .stock-card .stock-stats > div:nth-child(n+3) {
   border-top: 0;
 }
+
+/* Historical performance: emphasize the period movement, not a duplicate balance */
+.trend-return-percent { display:block;font-size:clamp(34px,4vw,52px);font-weight:800;line-height:1.16;letter-spacing:-.045em;margin-top:4px; }
+.trend-return-money { display:block;font-size:clamp(17px,2vw,22px);font-weight:700;margin-top:5px; }
+.trend-return-unavailable { display:block;font-size:clamp(21px,2.6vw,29px);font-weight:750;color:var(--ink);margin:7px 0; }
+.trend-footnote { align-items:flex-start; }
+.trend-footnote-dot { margin-top:5px; }
