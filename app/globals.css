@@ -775,3 +775,17 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 :root[data-theme="dark"] .stock-performance .performance-badge.positive { color: #69e5ad; background: #204b3c; }
 :root[data-theme="dark"] .stock-performance .performance-badge.negative { color: #ffa5a0; background: #513037; }
 :root[data-theme="dark"] .stock-performance .performance-badge.neutral { color: #b5c3d6; background: #304056; }
+
+/* Soft animated loading placeholders: shimmer with a gentle breathing pulse */
+.skel {
+  background: linear-gradient(135deg, #e7edf7, #dfe8f5);
+  animation: skeleton-breathe 2.1s ease-in-out infinite;
+}
+.skel::after {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.08) 25%, rgba(255,255,255,.82) 50%, rgba(255,255,255,.08) 75%, transparent 100%);
+  animation: skeleton-shimmer 1.7s ease-in-out infinite;
+}
+@keyframes skeleton-breathe { 0%,100% { opacity: .76; } 50% { opacity: 1; } }
+:root[data-theme="dark"] .skel { background: linear-gradient(135deg, #2b3d55, #354965); }
+:root[data-theme="dark"] .skel::after { background: linear-gradient(90deg,transparent,rgba(255,255,255,.025),rgba(255,255,255,.14),rgba(255,255,255,.025),transparent); }
+@media (prefers-reduced-motion: reduce) { .skel, .skel::after { animation: none; } }
