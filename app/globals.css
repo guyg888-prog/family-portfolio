@@ -712,3 +712,48 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 
 /* Divider above stock card action buttons */
 .stock-card .stock-actions { border-top: 1px solid #e3eaf3; padding-top: 13px; margin-top: 13px; }
+
+/* Theme switcher: scoped dark palette, with the existing light palette as default */
+.theme-toggle { transition: background .2s ease, color .2s ease, border-color .2s ease; }
+:root[data-theme="dark"] {
+  --bg: #0c1220; --card: #172235; --navy: #dbe8ff; --navy-2: #b5cdfb;
+  --ink: #eaf0fa; --mut: #a3b2c9; --dim: #8394ad;
+  --line: #2a3950; --line-2: #35465f;
+  --blue: #85b5ff; --blue-soft: #1e3556; --blue-pale: #38577c;
+  --up: #45d69a; --up-bg: #163e34; --down: #ff817c; --down-bg: #4b292e;
+  --amber: #ffb75b; --amber-bg: #493a29; --cash: #69d7e7;
+  --shadow: 0 3px 20px rgba(0,0,0,.18);
+  color-scheme: dark;
+}
+:root[data-theme="dark"] .head { background: var(--bg); }
+:root[data-theme="dark"] .head.head-scrolled { border-bottom-color: var(--line); }
+:root[data-theme="dark"] .btn.pri { background: #355eae; border-color: #355eae; color: #fff; }
+:root[data-theme="dark"] .headbtns .header-add.btn.pri { background: #2b466a; border-color: #45648b; color: #dbeaff; }
+:root[data-theme="dark"] .headbtns .header-add.btn.pri:hover { background: #34557d; }
+:root[data-theme="dark"] .inp,
+:root[data-theme="dark"] .chip,
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] select { background: #1a293e; color: var(--ink); border-color: var(--line-2); }
+:root[data-theme="dark"] .rs,
+:root[data-theme="dark"] .refresh-chip,
+:root[data-theme="dark"] .stock-card .stock-card-head,
+:root[data-theme="dark"] .stock-card-head,
+:root[data-theme="dark"] .profile-picker .profile-pick { background: #1d2c43; border-color: var(--line); }
+:root[data-theme="dark"] .stock-card .stock-card-head { box-shadow: none; }
+:root[data-theme="dark"] .stock-logo { background: #263750; color: #a8c7fb; }
+:root[data-theme="dark"] .portfolio-summary .summary-change { background: #20314a; border-color: #344967; box-shadow: none; }
+:root[data-theme="dark"] .portfolio-summary .summary-change-label { color: #b4c6e0; }
+:root[data-theme="dark"] .stock-card .stock-actions { border-top-color: var(--line); }
+:root[data-theme="dark"] .skel { background: #2b3c54; }
+:root[data-theme="dark"] .skel::after { background: linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent); }
+:root[data-theme="dark"] .stock-chart-placeholder,
+:root[data-theme="dark"] .tag.flat,
+:root[data-theme="dark"] .pill.none { background: #25354d; }
+:root[data-theme="dark"] .rng { background: #30415a; }
+:root[data-theme="dark"] .owner-avatar { border-color: #8196b4; }
+:root[data-theme="dark"] .page .card > .ctitle,
+:root[data-theme="dark"] .page .investments-section > .investments-heading,
+:root[data-theme="dark"] .page .portfolio-summary .summary-title { color: var(--ink); }
+:root[data-theme="dark"] .refresh-status,
+:root[data-theme="dark"] .date { color: var(--mut); }
