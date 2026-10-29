@@ -353,7 +353,7 @@ function MoneyEditor({ data, owners, books, onChange }) {
 function AddPosition({ draft, setDraft, onAdd, ownerHe }) {
   return (
     <div className="card">
-      <div className="ctitle">הוספת פוזיציה{ownerHe ? ` ל${ownerHe}` : ""}</div>
+      
       <div className="csub">סימול אמריקאי כמו AAPL. לבורסת תל אביב הוסיפו סיומת, למשל TEVA.TA</div>
       <div className="g3" style={{ marginBottom: 12 }}>
         <div>
