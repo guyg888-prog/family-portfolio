@@ -929,3 +929,31 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 /* The logo tile follows the dark palette rather than remaining white */
 :root[data-theme="dark"] .stock-logo { background: #263750; border-color: #405573; }
 :root[data-theme="dark"] .stock-logo img { background: #263750; }
+
+/* Give the three main dashboard sections more breathing room */
+.page > .card,
+.page > .investments-section {
+  padding: 26px 28px 30px;
+}
+.page > .card > .ctitle,
+.page > .investments-section > .investments-heading {
+  margin-bottom: 9px;
+}
+.page > .card > .csub {
+  margin-bottom: 24px;
+  line-height: 1.55;
+}
+.page > .investments-section > .investments-heading {
+  margin-bottom: 24px;
+}
+.page > .investments-section .stock-grid {
+  margin-bottom: 0;
+}
+@media (max-width: 700px) {
+  .page > .card,
+  .page > .investments-section {
+    padding: 20px 18px 23px;
+  }
+  .page > .card > .csub { margin-bottom: 18px; }
+  .page > .investments-section > .investments-heading { margin-bottom: 19px; }
+}
