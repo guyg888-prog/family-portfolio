@@ -1537,3 +1537,23 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
   }
   .trend-experience > .trend-empty { min-height: 340px; }
 }
+
+/* Single divider at the exact midpoint of each stock metrics grid */
+.stock-card .stock-stats {
+  position: relative;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.stock-card .stock-stats > div:nth-child(odd) {
+  border-inline-end: 0;
+}
+.stock-card .stock-stats::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: var(--line);
+  pointer-events: none;
+}
