@@ -789,3 +789,61 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 :root[data-theme="dark"] .skel { background: linear-gradient(135deg, #2b3d55, #354965); }
 :root[data-theme="dark"] .skel::after { background: linear-gradient(90deg,transparent,rgba(255,255,255,.025),rgba(255,255,255,.14),rgba(255,255,255,.025),transparent); }
 @media (prefers-reduced-motion: reduce) { .skel, .skel::after { animation: none; } }
+
+/* Dark mode coverage: all previously light-only UI surfaces */
+:root[data-theme="dark"] .head { background: rgba(12,18,32,.96); }
+:root[data-theme="dark"] .nav { background: rgba(20,31,48,.96); }
+:root[data-theme="dark"] .nav button[data-on="1"] { background: #284363; color: #c4dcff; }
+:root[data-theme="dark"] .btn:not(.pri):not(.dg),
+:root[data-theme="dark"] .chip:not([data-on="1"]),
+:root[data-theme="dark"] .pick,
+:root[data-theme="dark"] .icb,
+:root[data-theme="dark"] .calcrow { background: #1e2c42; border-color: var(--line-2); color: var(--ink); }
+:root[data-theme="dark"] .icb:hover,
+:root[data-theme="dark"] .btn:not(.pri):not(.dg):hover { background: #2a3e5b; }
+:root[data-theme="dark"] .icb[data-on="1"],
+:root[data-theme="dark"] .chip[data-on="1"] { background: #365e99; border-color: #4b77b7; color: #fff; }
+:root[data-theme="dark"] .modal-panel { background: #172235; border: 1px solid #34465f; color: var(--ink); }
+:root[data-theme="dark"] .modal-panel .card { background: transparent; }
+:root[data-theme="dark"] .modal-backdrop { background: rgba(2,7,17,.78); }
+:root[data-theme="dark"] .cash-tile { background: linear-gradient(155deg,#1b3549,#17283c); border-color: #31576b; }
+:root[data-theme="dark"] .cash-tile-icon { background: #24495a; color: #8ae5f1; }
+:root[data-theme="dark"] .cash-tile strong { color: var(--ink); }
+:root[data-theme="dark"] .cash-edit,
+:root[data-theme="dark"] .cash-tile-title .cash-edit { background: transparent; border-color: transparent; color: #8ae5f1; }
+:root[data-theme="dark"] .cash-edit:hover,
+:root[data-theme="dark"] .cash-tile-title .cash-edit:hover { background: #2b4a5a; border-color: #3c6474; }
+:root[data-theme="dark"] .donutwrap-expanded .lrow { background: #202e44; border-color: #33465f; }
+:root[data-theme="dark"] .donutwrap-expanded .lrow:hover,
+:root[data-theme="dark"] .donutwrap-expanded .lrow-active { background: #2a4363; border-color: #48678e; }
+:root[data-theme="dark"] .donut-tooltip { background: #213149 !important; border-color: #3d536e; color: var(--ink); box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+:root[data-theme="dark"] .donut-tooltip strong,
+:root[data-theme="dark"] .donut-tooltip b { color: var(--ink); }
+:root[data-theme="dark"] .stock-logo img { background: #fff; }
+:root[data-theme="dark"] .stock-card .stock-card-head { background: #243956; border-bottom-color: #395374; }
+:root[data-theme="dark"] .refresh-chip { background: #1e2e44; border-color: #3b4f69; }
+:root[data-theme="dark"] .refresh-chip-button { background: #2b4160; color: #dceaff; }
+:root[data-theme="dark"] .refresh-chip-button:hover { background: #39567b; }
+:root[data-theme="dark"] .refresh-chip .refresh-status { color: var(--ink); }
+:root[data-theme="dark"] .refresh-chip .refresh-status small,
+:root[data-theme="dark"] .refresh-status small { color: #67dfb0; }
+:root[data-theme="dark"] .refresh-dot { box-shadow: 0 0 0 3px #254f47; }
+:root[data-theme="dark"] .calcrow b { color: var(--ink); }
+:root[data-theme="dark"] .banner.bad { color: #ffb1ac; border-color: #71424a; }
+:root[data-theme="dark"] .delete-dialog-icon { background: #4a2a34; color: #ff9c96; }
+:root[data-theme="dark"] .note { background: #203654; }
+:root[data-theme="dark"] .rs { background: #1c2c43; }
+:root[data-theme="dark"] .tag.flat,
+:root[data-theme="dark"] .pill.none { background: #2a3b54; color: var(--mut); }
+:root[data-theme="dark"] .stock-card:hover { box-shadow: 0 12px 30px rgba(0,0,0,.3); }
+:root[data-theme="dark"] .headbtns .header-add.btn.pri { background: #29466a; border-color: #486b99; color: #e0ecff; }
+:root[data-theme="dark"] .headbtns .header-add.btn.pri:hover { background: #355780; }
+:root[data-theme="dark"] .page .investments-section { background: var(--card); }
+:root[data-theme="dark"] .recharts-default-tooltip { background-color: #213149 !important; border-color: #3d536e !important; color: var(--ink) !important; }
+:root[data-theme="dark"] .recharts-tooltip-label,
+:root[data-theme="dark"] .recharts-tooltip-item { color: var(--ink) !important; }
+:root[data-theme="dark"] .recharts-cartesian-axis-tick text { fill: #a7b8d0; }
+:root[data-theme="dark"] input::placeholder,
+:root[data-theme="dark"] textarea::placeholder { color: #879bb7; }
+:root[data-theme="dark"] input:focus-visible,
+:root[data-theme="dark"] button:focus-visible { outline: 2px solid #8bbaff; outline-offset: 2px; }
