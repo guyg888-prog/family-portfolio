@@ -1127,3 +1127,13 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
  .portfolio-hero .summary-change { padding:13px 15px; }
 }
 @media(prefers-reduced-motion:reduce) { .trend-range { transition:none; } }
+
+/* Right-align the percentage and dollar figures in account performance tiles */
+.portfolio-hero .summary-change-amount {
+  justify-content: flex-end;
+  text-align: right;
+  direction: ltr;
+}
+.portfolio-hero .summary-change-money {
+  text-align: right;
+}
