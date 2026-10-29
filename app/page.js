@@ -847,6 +847,8 @@ export default function Dashboard() {
   const toastTimer = useRef(null);
   const refreshBusy = useRef(false);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [quotesReadyKey, setQuotesReadyKey] = useState(null);
+  const [quotesErrorKey, setQuotesErrorKey] = useState(null);
   const notify = useCallback((message, kind = "success") => {
     clearTimeout(toastTimer.current);
     setToast({ message, kind });
@@ -914,11 +916,14 @@ export default function Dashboard() {
     return [...s];
   }, [data, visible]);
 
+  const quotesKey = `${me || ""}:${[...tickers].sort().join(",")}`;
+
   const refresh = useCallback(async () => {
     if (!tickers.length || refreshBusy.current) return;
     refreshBusy.current = true;
     setLoading(true);
     setErr(null);
+    setQuotesErrorKey(null);
     try {
       const res = await fetch("/api/quotes", {
         method: "POST",
@@ -928,6 +933,7 @@ export default function Dashboard() {
       if (!res.ok) throw new Error();
       const q = await res.json();
       setQuotes((p) => ({ ...p, ...q }));
+      setQuotesReadyKey(`${me || ""}:${[...tickers].sort().join(",")}`);
       const now = new Date();
       setLastUpdated(now);
 
@@ -946,6 +952,7 @@ export default function Dashboard() {
       }).catch(() => {});
     } catch (e) {
       setErr("לא הצלחתי למשוך מחירים כרגע.");
+      setQuotesErrorKey(`${me || ""}:${[...tickers].sort().join(",")}`);
     } finally {
       refreshBusy.current = false;
       setLoading(false);
@@ -959,9 +966,9 @@ export default function Dashboard() {
   }, [me, tickers.length, refresh]);
 
   useEffect(() => {
-    if (me && tickers.length && !lastUpdated) refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [me, tickers.length]);
+    if (!me || stateLoading || !tickers.length || (quotesReadyKey === quotesKey || quotesErrorKey === quotesKey)) return;
+    refresh();
+  }, [me, stateLoading, quotesKey, quotesReadyKey, quotesErrorKey, refresh, tickers.length]);
 
   const runResearch = useCallback(async (ticker) => {
     setResearch((s) => ({ ...s, [ticker]: { loading: true } }));
@@ -1175,6 +1182,10 @@ export default function Dashboard() {
   if (!ready) return <DashboardSkeleton />;
   if (!me) return <Gate onPick={pickMe} />;
   if (stateLoading) return <DashboardSkeleton />;
+  if (tickers.length > 0 && quotesReadyKey !== quotesKey) {
+    if (quotesErrorKey === quotesKey) return <div className="gate"><div className="gatebox"><h2>לא הצלחנו לטעון מחירי מניות</h2><p className="hint">כדי לא להציג סכומים לא מדויקים, הנתונים מוסתרים עד שהמחירים יתעדכנו.</p><button className="btn pri" onClick={() => { setQuotesErrorKey(null); refresh(); }}>נסה שוב</button></div></div>;
+    return <DashboardSkeleton />;
+  }
 
   const isOverview = tab === "overview";
   const bk = isOverview ? grand : byOwner[tab] || grand;
