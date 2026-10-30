@@ -1648,3 +1648,51 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
   .stock-card .stock-performance strong { gap: 5px; }
   .stock-card .stock-performance .stock-money { font-size: 12px; }
 }
+
+/* Refinements: compact historical filters, wider allocation legend, even header controls */
+.trend-experience .trend-range {
+  font-size: 12.5px;
+  padding: 9px 9px;
+  min-height: 36px;
+}
+@media (min-width: 1000px) {
+  .donutwrap-expanded {
+    grid-template-columns: minmax(0, 44%) minmax(0, 56%);
+    gap: clamp(18px, 2.2vw, 30px);
+  }
+  .donutwrap-expanded .donut {
+    width: min(100%, 490px);
+    max-width: 490px;
+    height: auto;
+    aspect-ratio: 1;
+  }
+}
+.headbtns { align-items: center; }
+.headbtns > .icb,
+.headbtns > .header-add,
+.headbtns > .refresh-chip {
+  box-sizing: border-box;
+  height: 44px;
+  min-height: 44px;
+  max-height: 44px;
+}
+.headbtns > .icb {
+  width: 44px;
+  min-width: 44px;
+}
+.headbtns > .header-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding-block: 0;
+}
+.headbtns > .refresh-chip {
+  display: flex;
+  align-items: center;
+  padding-block: 0;
+}
+.headbtns .refresh-chip-button {
+  align-self: center;
+  flex-shrink: 0;
+}
