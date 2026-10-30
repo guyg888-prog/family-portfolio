@@ -1617,3 +1617,34 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 :root[data-theme="dark"] .page > section.card {
   background: linear-gradient(135deg, var(--card) 50%, #1c2d48 145%);
 }
+
+/* Stock cards: show percent, direction and dollar movement on the same line */
+.stock-card .stock-performance strong {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  gap: 9px;
+  min-width: 0;
+}
+.stock-card .stock-performance .stock-pct {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 6px;
+  white-space: nowrap;
+}
+.stock-card .stock-performance .stock-money {
+  display: inline;
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0;
+  white-space: nowrap;
+  font-size: clamp(12px, 1.2vw, 16px);
+  line-height: 1.2;
+}
+@media (max-width: 480px) {
+  .stock-card .stock-performance strong { gap: 5px; }
+  .stock-card .stock-performance .stock-money { font-size: 12px; }
+}
