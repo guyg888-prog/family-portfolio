@@ -6,7 +6,7 @@ const IDS = ["mark", "ron", "guy"];
 
 const ACTIVITY_LIMIT = 250;
 const asNumber = (v) => Number(String(v ?? "").replace(/[^0-9.-]/g, "")) || 0;
-function detectActivity(previous, next, actor) {
+function detectActivity(previous, next, actor, activityHint) {
   const events = [];
   const stamp = new Date().toISOString();
   const push = (owner, type, ticker, quantity, price, amount) => events.push({
@@ -28,7 +28,12 @@ function detectActivity(previous, next, actor) {
       else if (Number(p.cost) !== Number(old.cost) || p.ticker !== old.ticker) push(owner,"edit",p.ticker);
       if (JSON.stringify(old.call ?? null) !== JSON.stringify(p.call ?? null)) push(owner,"call",p.ticker);
     }
-    for (const [id,p] of before) if (!after.has(id)) push(owner,"remove",p.ticker);
+    for (const [id,p] of before) if (!after.has(id)) {
+      const hint = activityHint?.closedSale;
+      const confirmedSale = hint?.owner === owner && hint?.id === id && Number(p.qty) > 0 && Number.isFinite(Number(hint.price)) && Number(hint.price) >= 0 && (actor === "mark" || actor === owner);
+      if (confirmedSale) push(owner,"sell_all",p.ticker,Number(p.qty),Number(hint.price),Number(p.qty) * Number(hint.price));
+      else push(owner,"remove",p.ticker);
+    }
     for (const field of ["cash","deposits"]) {
       const oldValue = asNumber(previous[field]?.[owner]);
       const newValue = asNumber(next[field]?.[owner]);
@@ -110,7 +115,7 @@ export async function PUT(req) {
           },
         };
       }
-      const events = detectActivity(current, next, who);
+      const events = detectActivity(current, next, who, body.activityHint);
       savedEvents = events;
       await setKey("state", next);
       if (events.length) {

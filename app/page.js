@@ -110,18 +110,19 @@ function ActivityFeed({ activity, overview }) {
   const [filter,setFilter] = useState("all");
   const [showAll,setShowAll] = useState(false);
   const filters = [{id:"all",label:"הכול"},{id:"trade",label:"קנייה ומכירה"},{id:"updates",label:"עדכונים"}];
-  const trades = ["add","buy","sell","remove"];
+  const trades = ["add","buy","sell","sell_all","remove"];
   const filtered = activity.filter(e=>filter==="all" || (filter==="trade" ? trades.includes(e.type) : !trades.includes(e.type)));
   const shown = showAll ? filtered : filtered.slice(0,6);
   const meta = {
     add:{label:"פוזיציה חדשה",icon:Plus,kind:"buy"},
     buy:{label:"קניית מניות",icon:ArrowDownRight,kind:"buy"},
     sell:{label:"מכירת מניות",icon:ArrowUpRight,kind:"sell"},
-    remove:{label:"הסרת פוזיציה",icon:Trash2,kind:"neutral"},
-    edit:{label:"עדכון פוזיציה",icon:Pencil,kind:"neutral"},
-    cash:{label:"עדכון מזומן",icon:Wallet,kind:"neutral"},
-    deposits:{label:"עדכון הפקדות",icon:Coins,kind:"neutral"},
-    call:{label:"עדכון הוראה",icon:Activity,kind:"neutral"},
+    sell_all:{label:"מכירת פוזיציה מלאה",icon:ArrowUpRight,kind:"sell"},
+    remove:{label:"מחיקת פוזיציה",icon:Trash2,kind:"remove"},
+    edit:{label:"עדכון פוזיציה",icon:Pencil,kind:"edit"},
+    cash:{label:"עדכון מזומן",icon:Wallet,kind:"cash"},
+    deposits:{label:"עדכון הפקדות",icon:Coins,kind:"cash"},
+    call:{label:"עדכון הוראה",icon:Activity,kind:"call"},
   };
   const time = value => { const d=new Date(value);return Number.isNaN(d.getTime()) ? "" : d.toLocaleString("he-IL",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}); };
   return <section className="card activity-section" aria-label="פעילות בתיק">
@@ -129,7 +130,7 @@ function ActivityFeed({ activity, overview }) {
     <div className="activity-filters" role="group" aria-label="סינון פעולות">{filters.map(f=><button key={f.id} type="button" className={"activity-filter"+(filter===f.id?" selected":"")} aria-pressed={filter===f.id} onClick={()=>{setFilter(f.id);setShowAll(false);}}>{f.label}</button>)}</div>
     {shown.length ? <div className="activity-list">{shown.map(e=>{const m=meta[e.type]||meta.edit;const Icon=m.icon;const owner=ownerOf(e.owner);return <div className="activity-row" key={e.id}>
       <div className={"activity-icon "+m.kind}><Icon size={19}/></div>
-      <div className="activity-details"><div className="activity-row-title">{m.label}{e.ticker&&<strong dir="ltr">{e.ticker}</strong>}</div><div className="activity-row-sub"><span>{time(e.at)}</span>{overview&&owner&&<span className="activity-owner"><OwnerAvatar owner={owner} size="small"/>{owner.he}</span>}</div></div>
+      <div className="activity-details"><div className="activity-row-title">{m.label}{e.ticker&&<span className="activity-stock"><StockLogo ticker={e.ticker}/><strong dir="ltr">{e.ticker}</strong></span>}</div><div className="activity-row-sub"><span>{time(e.at)}</span>{overview&&owner&&<span className="activity-owner"><OwnerAvatar owner={owner} size="small"/>{owner.he}</span>}</div></div>
       <div className="activity-amount">{Number.isFinite(e.quantity)&&e.quantity>0&&<strong dir="ltr">{e.quantity.toLocaleString("en-US",{maximumFractionDigits:4})} מניות</strong>}{Number.isFinite(e.amount)&&<strong dir="ltr">{e.amount>0?"+":""}{usd(e.amount,2)}</strong>}{Number.isFinite(e.price)&&<span dir="ltr">{usd(e.price,2)} למניה</span>}</div>
     </div>})}</div>:<div className="activity-empty"><Activity size={25}/><strong>{activity.length?"אין פעולות בסינון הזה":"עדיין אין פעולות מתועדות"}</strong><span>{activity.length?"אפשר לבחור סינון אחר כדי לראות פעולות.":"פעולות חדשות, כמו הוספת פוזיציה, קנייה, מכירה ועריכה, יופיעו כאן לאחר שמירתן."}</span></div>}
     {filtered.length>6&&<button className="activity-more" type="button" onClick={()=>setShowAll(v=>!v)}>{showAll?"הצגת פחות פעולות":`הצגת כל ${filtered.length} הפעולות`}</button>}
@@ -284,16 +285,21 @@ function CallPill({ call }) {
   return <span className={"pill " + call.action}>{CALLS.find((c) => c.id === call.action)?.he}</span>;
 }
 
-function MoneyEditor({ data, owners, books, onChange }) {
+function MoneyEditor({ data, owners, books, onSave, onCancel }) {
+  const [draftDeposits, setDraftDeposits] = useState(() => ({ ...data.deposits }));
+  const [draftCash, setDraftCash] = useState(() => ({ ...data.cash }));
   if (!owners.length) return null;
+  const changed = owners.some(o => String(draftDeposits[o.id] ?? "") !== String(data.deposits[o.id] ?? "") || String(draftCash[o.id] ?? "") !== String(data.cash[o.id] ?? ""));
   return (
-    <div className="card">
+    <form className="card" onSubmit={e => { e.preventDefault(); if (changed) onSave(draftDeposits, draftCash); }}>
       <div className="ctitle">כסף בתיק</div>
       <div className="csub">
         הזינו כמה כסף הוכנס לחשבון. הפנוי מחושב לבד — כל פוזיציה שנוספת יורדת ממנו.
       </div>
       {owners.map((o) => {
         const b = books[o.id] || {};
+        const manual = String(draftCash[o.id] ?? "").trim() !== "";
+        const autoCash = (b.autoCash || 0) + (Number(draftDeposits[o.id] || 0) - Number(data.deposits[o.id] || 0));
         return (
           <div key={o.id} style={{ marginBottom: 16 }}>
             {owners.length > 1 && (
@@ -308,8 +314,8 @@ function MoneyEditor({ data, owners, books, onChange }) {
               dir="ltr"
               inputMode="decimal"
               placeholder="0"
-              value={data.deposits[o.id] ?? ""}
-              onChange={(e) => onChange("deposits", o.id, e.target.value)}
+              value={draftDeposits[o.id] ?? ""}
+              onChange={(e) => setDraftDeposits(v => ({ ...v, [o.id]: e.target.value.replace(/[^0-9.]/g, "") }))}
             />
 
             <div className="calcrow">
@@ -319,33 +325,34 @@ function MoneyEditor({ data, owners, books, onChange }) {
               </span>
               <span>
                 נותר פנוי
-                <b dir="ltr" className={b.autoCash < 0 ? "down" : ""}>
+                <b dir="ltr" className={!manual && autoCash < 0 ? "down" : ""}>
                   {" "}
-                  {usd(b.manual ? b.cash : b.autoCash || 0, 0)}
+                  {usd(manual ? Number(draftCash[o.id] || 0) : autoCash, 0)}
                 </b>
               </span>
             </div>
 
-            {b.autoCash < 0 && !b.manual && (
+            {autoCash < 0 && !manual && (
               <div className="hint" style={{ color: "var(--down)" }}>
                 ההשקעות גדולות מההפקדות שהזנתם. בדקו את הסכום שהוכנס לחשבון.
               </div>
             )}
 
-            {b.manual ? (
+            {manual ? (
               <>
                 <span className="lbl" style={{ marginTop: 12 }}>פנוי — ערך ידני</span>
                 <input
                   className="inp"
                   dir="ltr"
                   inputMode="decimal"
-                  value={data.cash[o.id] ?? ""}
-                  onChange={(e) => onChange("cash", o.id, e.target.value)}
+                  value={draftCash[o.id] ?? ""}
+                  onChange={(e) => setDraftCash(v => ({ ...v, [o.id]: e.target.value.replace(/[^0-9.]/g, "") }))}
                 />
                 <button
+                  type="button"
                   className="btn sm"
                   style={{ marginTop: 8 }}
-                  onClick={() => onChange("cash", o.id, "")}
+                  onClick={() => setDraftCash(v => ({ ...v, [o.id]: "" }))}
                 >
                   חזרה לחישוב אוטומטי
                 </button>
@@ -354,7 +361,7 @@ function MoneyEditor({ data, owners, books, onChange }) {
               <button
                 className="btn sm"
                 style={{ marginTop: 10 }}
-                onClick={() => onChange("cash", o.id, String(Math.max(0, Math.round(b.autoCash || 0))))}
+                onClick={() => setDraftCash(v => ({ ...v, [o.id]: String(Math.max(0, Math.round(autoCash))) }))}
               >
                 תיקון ידני של הפנוי
               </button>
@@ -362,11 +369,9 @@ function MoneyEditor({ data, owners, books, onChange }) {
           </div>
         );
       })}
-      <div className="hint">
-        אחרי מכירה הכסף חוזר לחשבון והחישוב לא יודע על כך. במקרה כזה תקנו ידנית, או עדכנו את
-        סכום ההפקדות.
-      </div>
-    </div>
+      <div className="hint">השינויים יישמרו רק לאחר לחיצה על שמירה.</div>
+      <div className="money-editor-actions"><button type="button" className="btn" onClick={onCancel}>ביטול</button><button type="submit" className="btn pri" disabled={!changed}><Check size={16} /> שמירת שינויים</button></div>
+    </form>
   );
 }
 
@@ -935,14 +940,14 @@ export default function Dashboard() {
   }, [me]);
 
   const persist = useCallback(
-    (next) => {
+    (next, activityHint = null) => {
       setData(next);
       clearTimeout(timer.current);
       timer.current = setTimeout(() => {
         fetch("/api/state", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ me, data: next }),
+          body: JSON.stringify({ me, data: next, activityHint }),
         }).then(async (res) => { if (!res.ok) throw new Error("save failed"); const result = await res.json(); if (result.activity?.length) setActivity(prev => [...result.activity.slice().reverse(), ...prev].slice(0, 250)); notify("השינויים נשמרו בהצלחה"); }).catch(() => { setErr("השינוי לא נשמר."); notify("לא הצלחנו לשמור את השינוי", "error"); });
       }, 600);
     },
@@ -1174,7 +1179,7 @@ export default function Dashboard() {
     const list = data.positions[owner]
       .map((p) => (p.id === id ? { ...p, qty: p.qty - sellQty } : p))
       .filter((p) => p.qty > 0.0000001);
-    persist({ ...data, realized, positions: { ...data.positions, [owner]: list } });
+    persist({ ...data, realized, positions: { ...data.positions, [owner]: list } }, sellQty >= pos.qty - 0.0000001 ? { closedSale: { owner, id, price: sellPrice } } : null);
   };
 
   const fixPosition = (owner, id, qty, cost) => {
@@ -1309,7 +1314,7 @@ export default function Dashboard() {
           />
         </div>
 
-        <ActivityFeed activity={activity} overview={isOverview} />
+
 
         {isOverview && me === "mark" && (
           <div className="card">
@@ -1380,6 +1385,8 @@ export default function Dashboard() {
           </section>
         )}
 
+        <ActivityFeed activity={activity} overview={isOverview} />
+
         <div className="foot">
           מחירים מ-Yahoo Finance, מתעכבים בדרך כלל ברבע שעה — למעקב, לא לביצוע עסקאות.
           {me !== "mark" && " התיקים של האחים האחרים אינם נטענים למכשיר שלך."}
@@ -1389,7 +1396,7 @@ export default function Dashboard() {
 
       {toast && <div className={"app-toast " + (toast.kind === "error" ? "app-toast-error" : "")} role="status">{toast.kind === "error" ? <AlertTriangle size={19} /> : <CircleCheck size={19} />}<span>{toast.message}</span><button onClick={() => setToast(null)} aria-label="סגירה"><X size={15} /></button></div>}
       {modal?.type === "delete" && <Modal title={`מחיקת ${modal.row.ticker}`} onClose={() => setModal(null)}><div className="delete-dialog"><div className="delete-dialog-icon"><Trash2 size={24} /></div><p>למחוק את הפוזיציה <strong dir="ltr">{modal.row.ticker}</strong> מהתיק?</p><span>הפעולה תסיר את המניה מהתיק ולא ניתן לבטל אותה.</span><div className="delete-dialog-actions"><button className="btn" onClick={() => setModal(null)}>ביטול</button><button className="btn dg" onClick={() => deletePosition(modal.row.owner, modal.row.id)}><Trash2 size={16} /> מחיקת פוזיציה</button></div></div></Modal>}
-      {modal?.type === "cash" && <Modal title="עריכת מזומן פנוי להשקעה" onClose={() => setModal(null)}><MoneyEditor data={data} owners={isOverview ? editableOwners : [ownerOf(tab)]} books={byOwner} onChange={changeMoney} /></Modal>}
+      {modal?.type === "cash" && <Modal title="עריכת מזומן פנוי להשקעה" onClose={() => setModal(null)}><MoneyEditor data={data} owners={isOverview ? editableOwners : [ownerOf(tab)]} books={byOwner} onSave={(deposits, cash) => { persist({ ...data, deposits, cash }); setModal(null); }} onCancel={() => setModal(null)} /></Modal>}
       {modal?.type === "add" && <Modal title="הוספת פוזיציה" onClose={() => setModal(null)}><div className="modal-owner">{editableOwners.length > 1 && <select className="inp" value={modal.owner} onChange={e => setModal({ ...modal, owner: e.target.value })}>{editableOwners.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}</select>}</div><AddPosition draft={draft} setDraft={setDraft} onAdd={() => addPosition(modal.owner)} /></Modal>}
       {modal?.type === "edit" && <Modal title={`עריכת ${modal.row.ticker}`} onClose={() => setModal(null)}><PositionEditor row={modal.row} onBuy={(q,p) => buyMore(modal.row.owner,modal.row.id,q,p)} onSell={(q,p) => sellSome(modal.row.owner,modal.row.id,q,p)} onFix={(q,c) => { fixPosition(modal.row.owner,modal.row.id,q,c); setModal(null); }} onCancel={() => setModal(null)} /></Modal>}
       {modal?.type === "research" && <Modal title={`ניתוח ${modal.ticker}`} onClose={() => setModal(null)}><Research ticker={modal.ticker} price={quotes[modal.ticker]?.price} entry={research[modal.ticker]} onRun={() => runResearch(modal.ticker)} onClose={() => setModal(null)} /></Modal>}

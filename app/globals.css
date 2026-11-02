@@ -1734,3 +1734,18 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
   align-items: center;
   font-size: clamp(15px, 1.6vw, 20px);
 }
+
+/* Activity event colors, ticker icons and cash form confirmation */
+.activity-icon.remove {background:#fff0f1;color:#d94b55;}
+.activity-icon.edit {background:#fff4e0;color:#bc7d1f;}
+.activity-icon.cash {background:#e9f4ff;color:#347dbb;}
+.activity-icon.call {background:#f0eaff;color:#8462c3;}
+.activity-stock {display:inline-flex;align-items:center;gap:7px;direction:ltr;}
+.activity-stock .stock-logo {width:25px;height:25px;border-radius:50%;font-size:9px;border-color:var(--line);}
+.activity-stock .stock-logo img {padding:0;object-fit:cover;border-radius:50%;}
+.activity-stock .stock-logo svg {width:14px;height:14px;}
+.money-editor-actions {display:flex;justify-content:flex-end;gap:9px;margin-top:20px;padding-top:16px;border-top:1px solid var(--line);}
+:root[data-theme="dark"] .activity-icon.remove {background:#4b262d;color:#ff8a94;}
+:root[data-theme="dark"] .activity-icon.edit {background:#463921;color:#eac17a;}
+:root[data-theme="dark"] .activity-icon.cash {background:#20374e;color:#92c6ff;}
+:root[data-theme="dark"] .activity-icon.call {background:#342b4c;color:#c5a9ff;}
