@@ -586,7 +586,7 @@ function PositionEditor({ row, onBuy, onSell, onFix, onCancel }) {
         <>
           <div className="g2">
             <div>
-              <span className="lbl">{mode === "buy" ? "כמה נקנו" : "כמה נמכרו"}</span>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 6 }}><span className="lbl" style={{ marginBottom: 0 }}>{mode === "buy" ? "כמה נקנו" : "כמה נמכרו"}</span>{mode === "sell" && <button type="button" className="btn sm" onClick={() => setQty(String(row.qty))}>למכור הכל</button>}</div>
               <input
                 className="inp"
                 dir="ltr"
