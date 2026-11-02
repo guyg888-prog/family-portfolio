@@ -1749,3 +1749,7 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 :root[data-theme="dark"] .activity-icon.edit {background:#463921;color:#eac17a;}
 :root[data-theme="dark"] .activity-icon.cash {background:#20374e;color:#92c6ff;}
 :root[data-theme="dark"] .activity-icon.call {background:#342b4c;color:#c5a9ff;}
+
+/* Slightly stronger cash tile gradient in both themes */
+.cash-tile { background: linear-gradient(132deg,#dceffb 0%,#e9f7fe 43%,#f8fcff 78%,#ffffff 100%); border-color:#bbdce9; }
+:root[data-theme="dark"] .cash-tile { background: linear-gradient(132deg,#254963 0%,#203d53 46%,#192d42 100%); border-color:#386078; }
