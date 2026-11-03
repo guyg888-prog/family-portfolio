@@ -1753,3 +1753,67 @@ button, input { font-family: inherit; font-variant-numeric: inherit; }
 /* Slightly stronger cash tile gradient in both themes */
 .cash-tile { background: linear-gradient(132deg,#dceffb 0%,#e9f7fe 43%,#f8fcff 78%,#ffffff 100%); border-color:#bbdce9; }
 :root[data-theme="dark"] .cash-tile { background: linear-gradient(132deg,#254963 0%,#203d53 46%,#192d42 100%); border-color:#386078; }
+
+/* Activity filters follow the same segmented-tab language as Value Over Time. */
+.activity-section .activity-filters {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: max-content;
+  max-width: 100%;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  margin: 23px 0 10px;
+  background: #f1f4f9;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+}
+.activity-section .activity-filter {
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--mut);
+  padding: 9px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  transition: background .15s, color .15s;
+}
+.activity-section .activity-filter:hover {
+  background: transparent;
+  color: var(--ink);
+}
+.activity-section .activity-filter.selected,
+.activity-section .activity-filter.selected:hover {
+  background: var(--card);
+  color: #2454ae;
+  box-shadow: 0 1px 6px rgba(20,38,75,.09);
+}
+:root[data-theme="dark"] .activity-section .activity-filters {
+  background: #202e43;
+  border-color: #35455d;
+}
+:root[data-theme="dark"] .activity-section .activity-filter.selected,
+:root[data-theme="dark"] .activity-section .activity-filter.selected:hover {
+  background: #334a6b;
+  color: #dceaff;
+  box-shadow: none;
+}
+/* Match the other section headers, whose title is a direct card child. */
+.page .activity-section .activity-top .ctitle {
+  margin: 0 0 6px;
+  font-size: 21px;
+  line-height: 1.3;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--navy);
+}
+@media (max-width: 600px) {
+  .page .activity-section .activity-top .ctitle { font-size: 19px; }
+  .activity-section .activity-filters { margin-top: 17px; gap: 3px; }
+  .activity-section .activity-filter { padding: 8px 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .activity-section .activity-filter { transition: none; }
+}
